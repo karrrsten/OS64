@@ -1,0 +1,48 @@
+# Change
+
+- uefi bootloader that loads the kernel elf at base of higher half
+
+	&rarr; identity map memory to higher half, phys to virt is just
+	'phys + 0xF... (higher_half_start)'
+- bootloader fills in page tables, memmap, rsdp and kernel_end
+- bootloader provides GOT frame buffer via filled in variable
+- bootloader configures cr[0:..], EFLAGS, EFER, etc.
+- temporary lower half identity mapping, soon unmapped by kernel
+- maybe only use temporary page tables that are changed by the kernel
+(with the exact same mappings)
+- documentation is important
+- cpuid checks
+
+# Functions
+
+## Done:
+gdt_init
+idt_init
+isr_init
+mem_init
+pg_init
+
+## TODO:
+(malloc_init (maybe on first use of malloc?))
+
+lapic_init
+ioapic_init (only ps/2 keyboard, pci will use msi/msi-x)
+(keyboard_init)
+console_init
+pci_init
+block_init
+fs_init
+
+fpu/simd/etc_init
+proc_init
+syscall_init
+
+# Ressources
+
+https://github.com/mit-pdos/xv6-public/blob/master/main.c
+https://github.com/klange/toaruos
+
+# Multiprocessor
+
+mp_init
+struct cpu (w/ apic_id, gdt, tss, stack, isr_stack, cur_proc…)
