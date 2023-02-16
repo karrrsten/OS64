@@ -13,11 +13,11 @@
  * This eases the handling of them the addresses as the table entries can be
  * treated as regular addresses, with the lower bits masked off
  *
- * Also: Page-Attribute Tabel is not used */
+ * Also: Page-Attribute Table is not used */
 
 /* Each page table entry has its own union, containing a struct of bitfiels with
- * the attributes and the address, the entry is pointing to. Note that the lower
- * bits of the address have to be masked off correctly */
+ * the attributes and the address/value, the entry is pointing to. Note that the
+ * lower bits of the address/value have to be masked off correctly */
 union [[gnu::packed]] cr3 {
 	struct [[gnu::packed]] {
 		uint64_t     : 3;
@@ -27,9 +27,7 @@ union [[gnu::packed]] cr3 {
 		uint64_t     : 52;
 	};
 
-	uint64_t addr;
-
-	uint64_t value;
+	uint64_t val; /* Remember to mask off the lower bits! */
 };
 
 union [[gnu::packed]] pml4_entry {
@@ -44,7 +42,7 @@ union [[gnu::packed]] pml4_entry {
 		uint64_t                 : 52;
 	};
 
-	uint64_t addr; /* Remember to mask off the lower bits! */
+	uint64_t val; /* Remember to mask off the lower bits! */
 };
 
 union [[gnu::packed]] pdp_entry {
@@ -62,7 +60,7 @@ union [[gnu::packed]] pdp_entry {
 		uint64_t                 : 52;
 	};
 
-	uint64_t addr; /* Remember to mask off the lower bits! */
+	uint64_t val; /* Remember to mask off the lower bits! */
 };
 
 union [[gnu::packed]] pd_entry {
@@ -80,7 +78,7 @@ union [[gnu::packed]] pd_entry {
 		uint64_t                 : 52;
 	};
 
-	uint64_t addr; /* Remember to mask off the lower bits! */
+	uint64_t val; /* Remember to mask off the lower bits! */
 };
 
 union [[gnu::packed]] pt_entry {
@@ -98,5 +96,5 @@ union [[gnu::packed]] pt_entry {
 		uint64_t                 : 52;
 	};
 
-	uint64_t addr; /* Remember to mask off the lower bits! */
+	uint64_t val; /* Remember to mask off the lower bits! */
 };

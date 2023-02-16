@@ -1,32 +1,35 @@
 #include "isr.h"
 
 #include "descr_tbl.h"
-#include "kernel/serial.h"
 #include "x86.h"
 
-#define DEFAULT_HANDLER_WITH_CODE(vec, err_str)         \
-	[[gnu::interrupt, noreturn]] void isr##vec(         \
-		[[maybe_unused]] struct interrupt_frame *frame, \
-		[[maybe_unused]] uint64_t err_code) {           \
-		serial_write("An Error occured:\nError: ");     \
-		serial_write(err_str);                          \
-		serial_write("\nCode: 0x");                     \
-		/* serial_write(err_code); */                   \
-		for (;;) {                                      \
-			hlt();                                      \
-		}                                               \
+#include "util/log.h"
+
+#include <stdint.h>
+
+#define serial_write(...)
+
+#define DEFAULT_HANDLER_WITH_CODE(vec, err_str)                              \
+	[[gnu::interrupt, noreturn]] void isr##vec(                              \
+		[[maybe_unused]] struct interrupt_frame *frame, uint64_t err_code) { \
+		handler_with_code(err_str, err_code);                                \
 	}
 
 #define DEFAULT_HANDLER_NO_CODE(vec, err_str)             \
 	[[gnu::interrupt, noreturn]] void isr##vec(           \
 		[[maybe_unused]] struct interrupt_frame *frame) { \
-		serial_write("An Error occured:\nError: ");       \
-		serial_write(err_str);                            \
-		serial_write("\nNo Error Code");                  \
-		for (;;) {                                        \
-			hlt();                                        \
-		}                                                 \
+		handler_no_code(err_str);                         \
 	}
+
+[[noreturn, gnu::no_caller_saved_registers]] void handler_with_code(
+	const char *err_str, uint64_t err_code) {
+	panic("An Error occured: \n Error: %s\n Code: 0x%p", err_str, err_code);
+}
+
+[[noreturn, gnu::no_caller_saved_registers]] void handler_no_code(
+	const char *err_str) {
+	panic("An Error occured: \n Error: %s\n No error code!", err_str);
+}
 
 DEFAULT_HANDLER_NO_CODE(0, "Divide-by-Zero-Error Exception")
 DEFAULT_HANDLER_NO_CODE(1, "Debug Exception")
@@ -65,49 +68,52 @@ DEFAULT_HANDLER_WITH_CODE(30, "Security Exception")
 /* Vectors 32-255 are user defined, i.e. generated externally and handlers are
  * installed when the corresponding device is configured */
 
+[[gnu::no_caller_saved_registers]] void print_page_fault(uint64_t err_code) {
+	panic("An Error occured:\n Error: Page-Fault Exception\nCode: 0x%p\nPage "
+		  "fault linear address: 0x%p",
+		err_code, rcr2());
+}
+
 [[gnu::interrupt, noreturn]] void isr14(
 	[[maybe_unused]] struct interrupt_frame *frame,
 	[[maybe_unused]] uint64_t err_code) {
-	serial_write("An Error occured:\nError: Page-Fault Exception\nCode: 0x");
-	/* serial_write(err_code); */
-	/* serial_write("Page fault linear address: 0x")*/
-	/* serial_write(rcr2()); */
+	print_page_fault(err_code);
 	for (;;) {
 		hlt();
 	}
 }
 
 void isr_init(void) {
-	idt_register(0, (void *)&isr0, DESCR_TYPE_INT);
-	idt_register(1, (void *)&isr1, DESCR_TYPE_INT);
-	idt_register(2, (void *)&isr2, DESCR_TYPE_INT);
-	idt_register(3, (void *)&isr3, DESCR_TYPE_INT);
-	idt_register(4, (void *)&isr4, DESCR_TYPE_INT);
-	idt_register(5, (void *)&isr5, DESCR_TYPE_INT);
-	idt_register(6, (void *)&isr6, DESCR_TYPE_INT);
-	idt_register(7, (void *)&isr7, DESCR_TYPE_INT);
-	idt_register(8, (void *)&isr8, DESCR_TYPE_INT);
-	idt_register(9, nullptr, DESCR_TYPE_INT); /* reserved Vector */
-	idt_register(10, (void *)&isr10, DESCR_TYPE_INT);
-	idt_register(11, (void *)&isr11, DESCR_TYPE_INT);
-	idt_register(12, (void *)&isr12, DESCR_TYPE_INT);
-	idt_register(13, (void *)&isr13, DESCR_TYPE_INT);
-	idt_register(14, (void *)&isr14, DESCR_TYPE_INT);
-	idt_register(15, nullptr, DESCR_TYPE_INT); /* reserved Vector */
-	idt_register(16, (void *)&isr16, DESCR_TYPE_INT);
-	idt_register(17, (void *)&isr17, DESCR_TYPE_INT);
-	idt_register(18, (void *)&isr18, DESCR_TYPE_INT);
-	idt_register(19, (void *)&isr19, DESCR_TYPE_INT);
-	idt_register(20, nullptr, DESCR_TYPE_INT); /* reserved Vector */
-	idt_register(21, (void *)&isr21, DESCR_TYPE_INT);
-	idt_register(22, nullptr, DESCR_TYPE_INT); /* reserved Vector */
-	idt_register(23, nullptr, DESCR_TYPE_INT); /* reserved Vector */
-	idt_register(24, nullptr, DESCR_TYPE_INT); /* reserved Vector */
-	idt_register(25, nullptr, DESCR_TYPE_INT); /* reserved Vector */
-	idt_register(26, nullptr, DESCR_TYPE_INT); /* reserved Vector */
-	idt_register(27, nullptr, DESCR_TYPE_INT); /* reserved Vector */
-	idt_register(28, (void *)&isr28, DESCR_TYPE_INT);
-	idt_register(29, (void *)&isr29, DESCR_TYPE_INT);
-	idt_register(30, (void *)&isr30, DESCR_TYPE_INT);
-	idt_register(31, nullptr, DESCR_TYPE_INT); /* reserved Vector */
+	idt_register(0, (void *)&isr0, GATE_TYPE_INT);
+	idt_register(1, (void *)&isr1, GATE_TYPE_INT);
+	idt_register(2, (void *)&isr2, GATE_TYPE_INT);
+	idt_register(3, (void *)&isr3, GATE_TYPE_INT);
+	idt_register(4, (void *)&isr4, GATE_TYPE_INT);
+	idt_register(5, (void *)&isr5, GATE_TYPE_INT);
+	idt_register(6, (void *)&isr6, GATE_TYPE_INT);
+	idt_register(7, (void *)&isr7, GATE_TYPE_INT);
+	idt_register(8, (void *)&isr8, GATE_TYPE_INT);
+	idt_register(9, nullptr, GATE_TYPE_INT); /* reserved Vector */
+	idt_register(10, (void *)&isr10, GATE_TYPE_INT);
+	idt_register(11, (void *)&isr11, GATE_TYPE_INT);
+	idt_register(12, (void *)&isr12, GATE_TYPE_INT);
+	idt_register(13, (void *)&isr13, GATE_TYPE_INT);
+	idt_register(14, (void *)&isr14, GATE_TYPE_INT);
+	idt_register(15, nullptr, GATE_TYPE_INT); /* reserved Vector */
+	idt_register(16, (void *)&isr16, GATE_TYPE_INT);
+	idt_register(17, (void *)&isr17, GATE_TYPE_INT);
+	idt_register(18, (void *)&isr18, GATE_TYPE_INT);
+	idt_register(19, (void *)&isr19, GATE_TYPE_INT);
+	idt_register(20, nullptr, GATE_TYPE_INT); /* reserved Vector */
+	idt_register(21, (void *)&isr21, GATE_TYPE_INT);
+	idt_register(22, nullptr, GATE_TYPE_INT); /* reserved Vector */
+	idt_register(23, nullptr, GATE_TYPE_INT); /* reserved Vector */
+	idt_register(24, nullptr, GATE_TYPE_INT); /* reserved Vector */
+	idt_register(25, nullptr, GATE_TYPE_INT); /* reserved Vector */
+	idt_register(26, nullptr, GATE_TYPE_INT); /* reserved Vector */
+	idt_register(27, nullptr, GATE_TYPE_INT); /* reserved Vector */
+	idt_register(28, (void *)&isr28, GATE_TYPE_INT);
+	idt_register(29, (void *)&isr29, GATE_TYPE_INT);
+	idt_register(30, (void *)&isr30, GATE_TYPE_INT);
+	idt_register(31, nullptr, GATE_TYPE_INT); /* reserved Vector */
 }

@@ -5,9 +5,7 @@ SECTIONS
 	/* Load the kernel at the base of the higher half (as per limine protocol) */
 	. = 0xFFFFFFFF80000000;
 
-	_kernel_end = .;
-
-/* 	.text ALIGN(4K) :
+	.text ALIGN(4K) :
 	{
 		*(.text .text.*)
 	}
@@ -27,4 +25,6 @@ SECTIONS
 		*(.bss .bss.*)
 		*(COMMON)
 	}
- */}
+
+	_kernel_end = .;
+}

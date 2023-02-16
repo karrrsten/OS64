@@ -3,8 +3,8 @@
 - clang-16 (some C23 features are required)
 - qemu-system-x86_64, qemu-img
 - limine bootloader (from https://github.com/limine-bootloader/limine), files are expected to be installed in their default directories
-- Standard Utilities: parted, mkfs.fat
-- gdb (only for debugging)
+- parted, mkfs.fat
+- gdb (for debugging)
 
 ## Building and Running
 Output from the kernel will be sent to COM1.

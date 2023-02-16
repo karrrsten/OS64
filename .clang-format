@@ -54,7 +54,7 @@ ForEachMacros: []
 IfMacros: []
 IncludeBlocks: 'Regroup'
 IncludeCategories:
-  - Regex: '[^\/]*\.h'
+  - Regex: '\"[^\/]*\.h\"'
     Priority: 1
   - Regex: '<[^>]*>'
     Priority: 3

@@ -1,17 +1,23 @@
+#include "malloc.h"
+
 #include "cpu/descr_tbl.h"
-#include "cpu/isr.h"
 #include "cpu/mem.h"
 #include "cpu/page.h"
-#include "serial.h"
+#include "util/log.h"
+#include "util/print.h"
 
-[[noreturn]] void kmain() {
+#define HEAP_SIZE (16384)
+
+[[noreturn]] void kmain(void) {
+	kprint("\x1B[2J"); /* clear the serial console */
+	log("Initializing kernel...");
 	gdt_init();
 	idt_init();
-	isr_init();
-	// pg_init(); // Currently not working
-	// mem_init();
+	mem_init();
+	pg_init();
+	heap_init(kernel_end, HEAP_SIZE);
 
-	serial_write("hello world");
+	log("Initializing kernel: Success");
 	for (;;)
 		;
 }
