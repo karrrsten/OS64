@@ -6,10 +6,11 @@ CC = clang-16
 QEMU = qemu-system-x86_64
 
 CFLAGS += -g -O0 -std=gnu2x -ffreestanding
-CFLAGS += -fms-extensions
+CFLAGS += -fms-extensions  -fwrapv -fwrapv-pointer -fno-strict-aliasing #TODO: -funsigned-char
 CFLAGS += -target x86_64-elf -mgeneral-regs-only -mno-red-zone -mcmodel=large
 CFLAGS += -Wall -Wextra -Werror
 CFLAGS += -I$(CURDIR) -nostdlib -static
+
 QEMU_FLAGS += -m 512M -machine q35 -cpu max -no-shutdown -no-reboot
 QEMU_FLAGS += -d int -M smm=off -trace events=trace_events.cfg -D qemu.log
 QEMU_FLAGS += -drive file=$(IMG),media=disk,format=raw
