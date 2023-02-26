@@ -21,8 +21,6 @@ size_t memmap_size;
 
 void mem_init(void) {
 	log("Initializing physical memory allocator...");
-	// TODO: this could overrun into used memory
-	memmap = &_kernel_end;
 	struct limine_memmap_entry **memmap_entries
 		= limine_memmap_response->entries;
 
@@ -34,6 +32,9 @@ void mem_init(void) {
 	}
 	log("Total amount of memory available: %llu =  0x%llX", mem_max, mem_max);
 	memmap_size = mem_max / 4096 / 8;
+
+	// TODO: this could overrun into used memory
+	memmap = &_kernel_end;
 	kernel_end = (void *)memmap + memmap_size;
 
 	memmap_phys
@@ -90,8 +91,8 @@ void *early_alloc_page(void) {
 void *alloc_page(void) {
 	for (size_t index = 0; index < mem_max; ++index) {
 		if (~memmap[index]) {
-			for (int bit = 0; bit < 1; ++bit) {
-				if (~memmap[index] & 1 << bit) {
+			for (int bit = 0; bit < 8; ++bit) {
+				if (~memmap[index] & (1 << bit)) {
 					void *page = (void *)(index * 4096 * 8 + bit * 4096);
 					mark_page_used(page);
 					return page;
@@ -112,8 +113,35 @@ void mark_page_used(void *page) {
 	memmap[index] |= 1 << bit;
 }
 
-// TODO
-void mark_pages_used(void *pages);
+void mark_pages_used(void *pages, size_t size) {
+	size_t index = (size_t)pages / 4096 / 8;
+	size_t start_bit = (size_t)pages / 4096 % 8;
+
+	/* Fill bits that do not fill an entire byte */
+	if (start_bit != 0) {
+		for (int bit = start_bit; bit <= 8; ++bit) {
+			memmap[index] |= 1 << bit;
+			--size;
+		}
+		++index;
+	}
+
+	/* Fill entire bytes */
+	while (size > 8) {
+		memmap[index] = UINT8_MAX;
+		++index;
+		size -= 8;
+	}
+
+	/* Fill remaining bits */
+	if (size != 0) {
+		for (int bit = 0; bit < (int)size; ++bit) {
+			memmap[index] |= 1 << bit;
+			--size;
+		}
+		++index;
+	}
+}
 
 void free_page(void *page) {
 	size_t index = (size_t)page / 4096 / 8;
@@ -121,5 +149,32 @@ void free_page(void *page) {
 	memmap[index] &= ~(1 << bit);
 }
 
-// TODO
-void free_pages(void *pages, size_t size);
+void free_pages(void *pages, size_t size) {
+	size_t index = (size_t)pages / 4096 / 8;
+	size_t start_bit = (size_t)pages / 4096 % 8;
+
+	/* Fill bits that do not fill an entire byte */
+	if (start_bit != 0) {
+		for (int bit = start_bit; bit <= 8; ++bit) {
+			memmap[index] &= ~(1 << bit);
+			--size;
+		}
+		++index;
+	}
+
+	/* Fill entire bytes */
+	while (size > 8) {
+		memmap[index] = 0;
+		++index;
+		size -= 8;
+	}
+
+	/* Fill remaining bits */
+	if (size != 0) {
+		for (int bit = 0; bit < (int)size; ++bit) {
+			memmap[index] &= ~(1 << bit);
+			--size;
+		}
+		++index;
+	}
+}
