@@ -1,7 +1,6 @@
 #include "page.h"
 
 #include "mem.h"
-#include "page_tables.h"
 #include "x86.h"
 
 #include "kernel/limine_reqs.h"
@@ -20,9 +19,11 @@
 #define PD_INDEX(addr)   ((virt >> 21) & 0x1FF)
 #define PT_INDEX(addr)   ((virt >> 12) & 0x1FF)
 
+#define PAGE_TABLE_ALIGN (4096)
+
 alignas(PAGE_TABLE_ALIGN) volatile uint64_t pml4[512];
 
-void early_mmap(void *phys_addr, void *virt_addr, uint64_t flags);
+static void early_mmap(void *phys_addr, void *virt_addr, uint64_t flags);
 
 /**
  * @brief Initialize the kernel's page tables.
@@ -35,14 +36,14 @@ void pg_init(void) {
 	    & ADDR_MASK_4K;
 
 	uint64_t *pdp_entry_zero = early_alloc_page();
+
 	pml4[PML4_INDEX(HIGHER_HALF_BASE)]
 		= ((uint64_t)pdp_entry_zero & ADDR_MASK_4K) | PAGE_PRESENT | PAGE_WRITE;
 
-	// TODO: somehow this does not work
-	/* Map all of memory into the higher half */
-	for (size_t i = 0; i <= mem_max / 0x8000'0000 /* 2GB */; ++i) {
+	/* Map all of memory into the higher half (max 512 GB) */
+	for (size_t i = 0; i <= mem_max / 0x4000'0000 /* 1GB */ && i < 512; ++i) {
 		pdp_entry_zero[i]
-			= (i * 0x8000'0000 & ADDR_MASK_1G) | PAGE_SIZE | PAGE_PRESENT
+			= (i * 0x4000'0000 & ADDR_MASK_1G) | PAGE_SIZE | PAGE_PRESENT
 		    | PAGE_WRITE | PAGE_GLOBAL;
 	}
 
@@ -51,6 +52,7 @@ void pg_init(void) {
 				  virt_addr = KERNEL_BASE;
 		 virt_addr < (uint64_t)kernel_end;
 		 phys_addr += 4096, virt_addr += 4096) {
+		// TODO: this could actually be mmap
 		early_mmap((void *)phys_addr, (void *)virt_addr,
 			PAGE_PRESENT | PAGE_WRITE | PAGE_GLOBAL);
 	}
@@ -62,7 +64,7 @@ void pg_init(void) {
 	log("Loading CR3: Success");
 }
 
-void early_mmap(void *phys_addr, void *virt_addr, uint64_t flags) {
+static void early_mmap(void *phys_addr, void *virt_addr, uint64_t flags) {
 	uint64_t phys = (uint64_t)phys_addr;
 	uint64_t virt = (uint64_t)virt_addr;
 	unsigned pml4_index = PML4_INDEX(virt);
@@ -95,7 +97,7 @@ void early_mmap(void *phys_addr, void *virt_addr, uint64_t flags) {
 	pt[pt_index] = ((uint64_t)phys & ADDR_MASK_4K) | flags;
 }
 
-void map_single_page(uint64_t phys, uint64_t virt, uint64_t flags) {
+static void map_single_page(uint64_t phys, uint64_t virt, uint64_t flags) {
 	unsigned pml4_index = PML4_INDEX(virt);
 	unsigned pdp_index = PDP_INDEX(virt);
 	unsigned pd_index = PD_INDEX(virt);
@@ -149,7 +151,7 @@ void *mmap(void *phys_addr, void *virt_addr, size_t size, uint64_t flags) {
 	return virt_addr;
 }
 
-void unmap_single_page(uint64_t virt) {
+static void unmap_single_page(uint64_t virt) {
 	unsigned pml4_index = PML4_INDEX(virt);
 	unsigned pdp_index = PDP_INDEX(virt);
 	unsigned pd_index = PD_INDEX(virt);
@@ -169,7 +171,7 @@ void unmap_single_page(uint64_t virt) {
  */
 void munmap(void *virt_addr, size_t size) {
 	uint64_t virt = (uint64_t)virt_addr;
-	for (; virt < virt + size; virt += 4096) {
+	for (; virt <= virt + size; virt += 4096) {
 		unmap_single_page(virt);
 	}
 }

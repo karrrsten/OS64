@@ -50,11 +50,11 @@ struct [[gnu::packed]] tss {
 	uint16_t io_pb_base;
 };
 
-volatile struct tss tss;
+static volatile struct tss tss;
 
-volatile void *isr_stack;
+static volatile void *isr_stack;
 
-volatile char alignas(8) gdt[48];
+static volatile char alignas(8) gdt[48];
 
 /**
  * @brief Initialize the GDT with a kernel and a user code segment, a data
@@ -120,7 +120,7 @@ ret:
 #define GATE_DESCR(descr) ((__uint128_t)descr << 16)
 #define GATE_TYPE(type)   ((__uint128_t)type << 40)
 
-volatile alignas(16) __uint128_t idt[256];
+static volatile alignas(16) __uint128_t idt[256];
 
 /**
  * @brief Initialize and load the IDT.

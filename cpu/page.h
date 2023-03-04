@@ -1,5 +1,6 @@
 #pragma once
 
+#include <limine.h>
 #include <stddef.h>
 #include <stdint.h>
 
@@ -19,7 +20,6 @@
 
 void pg_init(void);
 
-/* if virt is nullptr, mmap chooses an address !NOT YET IMPLEMENTED! */
 void *mmap(void *phys_addr, void *virt_addr, size_t size, uint64_t flags);
 
 void munmap(void *virt_addr, size_t size);

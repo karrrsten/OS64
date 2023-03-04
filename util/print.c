@@ -1,13 +1,20 @@
 #include "print.h"
 
 #include "cpu/x86.h"
+
 #include <stdarg.h>
 #include <stddef.h>
 #include <stdint.h>
 
 #define COM1 (0x3F8)
 
-#define serial_putchar(c) outb(COM1, c)
+/**
+ * @brief Output a single char to the serial console (i.e. COM1).
+ * @param c The char to output.
+ */
+static inline void serial_putchar(char c) {
+	outb(COM1, c);
+}
 
 /**
  * @brief Output a single char to the serial console.
@@ -53,8 +60,8 @@ enum LENGTH_MODIFIER {
 	PTRDIFF_T,
 };
 
-int print_signed(intmax_t val);
-int print_unsigned(uintmax_t val, char format);
+static int print_signed(intmax_t val);
+static int print_unsigned(uintmax_t val, char format);
 
 /**
  * @see kprintf()
@@ -181,7 +188,7 @@ int kvprintf(const char *restrict format, va_list arg) {
 	return ret;
 }
 
-int print_signed(intmax_t val) {
+static int print_signed(intmax_t val) {
 	if (val == 0) {
 		serial_putchar('0');
 		return 1;
@@ -208,7 +215,7 @@ int print_signed(intmax_t val) {
 	return idx - 1;
 }
 
-int print_unsigned(uintmax_t val, char format) {
+static int print_unsigned(uintmax_t val, char format) {
 	if (val == 0) {
 		serial_putchar('0');
 		return 1;

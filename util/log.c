@@ -1,7 +1,9 @@
 #include "log.h"
 
-#include "cpu/x86.h"
 #include "print.h"
+
+#include "cpu/x86.h"
+
 #include <stdarg.h>
 
 /**

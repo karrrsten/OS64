@@ -10,14 +10,14 @@
 #include <stddef.h>
 #include <stdint.h>
 
-extern void _kernel_end; /* end of the kernel, defined in linker.ld */
-void *kernel_end;
+extern void _kernel_end; /* End of the kernel, defined in linker.ld */
+void *kernel_end; /* End of the kernel, including memmap */
 
 size_t mem_max;
 
-uint8_t *memmap; /* map of all of physical memory */
-uint8_t *memmap_phys; /* Physical address of memmap */
-size_t memmap_size;
+static uint8_t *memmap; /* Map of all of physical memory */
+static uint8_t *memmap_phys; /* Physical address of memmap */
+static size_t memmap_size;
 
 /**
  * @brief Initialize the physical memory manager.
@@ -35,6 +35,9 @@ void mem_init(void) {
 	}
 	log("Total amount of memory available: %llu =  0x%llX", mem_max, mem_max);
 	memmap_size = mem_max / 4096 / 8;
+
+	// TODO: this could overrun into used memory
+	memmap = &_kernel_end;
 	kernel_end = (void *)memmap + memmap_size;
 
 	memmap_phys
@@ -100,8 +103,8 @@ void *early_alloc_page(void) {
 void *alloc_page(void) {
 	for (size_t index = 0; index < mem_max; ++index) {
 		if (~memmap[index]) {
-			for (int bit = 0; bit < 1; ++bit) {
-				if (~memmap[index] & 1 << bit) {
+			for (int bit = 0; bit < 8; ++bit) {
+				if (~memmap[index] & (1 << bit)) {
 					void *page = (void *)(index * 4096 * 8 + bit * 4096);
 					mark_page_used(page);
 					return page;
@@ -113,8 +116,31 @@ void *alloc_page(void) {
 	return nullptr;
 }
 
-// TODO
-void *alloc_pages(size_t size);
+/**
+ * @brief Allocate a contigious range of physical memory.
+ * @param size The size of the range to allocate.
+ * @return The address of the allocated range.
+ */
+void *alloc_pages(size_t size) {
+	size_t num_pages = size / 4096;
+	size_t found_free = 0;
+	size_t first_free_idx;
+	for (size_t i = 0; i < memmap_size; ++i) {
+		if (memmap[i] == 0) {
+			++found_free;
+			first_free_idx = found_free ? first_free_idx : i;
+		} else {
+			found_free = 0;
+			first_free_idx = 0;
+		}
+
+		if (found_free >= num_pages / 8) {
+			mark_pages_used((void *)(i * 8 * 4096), size);
+			return (void *)(i * 8 * 4096);
+		}
+	}
+	return nullptr;
+}
 
 /**
  * @brief Mark a single page of physical memory as used.
@@ -126,8 +152,40 @@ void mark_page_used(void *page) {
 	memmap[index] |= 1 << bit;
 }
 
-// TODO
-void mark_pages_used(void *pages);
+/**
+ * @brief Mark a range of pages of physical memory as used.
+ * @param pages The first page to be marked as used.
+ * @param size The size of physical memory to be marked as used.
+ */
+void mark_pages_used(void *pages, size_t size) {
+	size_t index = (size_t)pages / 4096 / 8;
+	size_t start_bit = (size_t)pages / 4096 % 8;
+
+	/* Fill bits that do not fill an entire byte */
+	if (start_bit != 0) {
+		for (int bit = start_bit; bit <= 8; ++bit) {
+			memmap[index] |= 1 << bit;
+			--size;
+		}
+		++index;
+	}
+
+	/* Fill entire bytes */
+	while (size > 8) {
+		memmap[index] = UINT8_MAX;
+		++index;
+		size -= 8;
+	}
+
+	/* Fill remaining bits */
+	if (size != 0) {
+		for (int bit = 0; bit < (int)size; ++bit) {
+			memmap[index] |= 1 << bit;
+			--size;
+		}
+		++index;
+	}
+}
 
 /**
  * @brief Free a previously allocated page of physical memory.
@@ -139,5 +197,37 @@ void free_page(void *page) {
 	memmap[index] &= ~(1 << bit);
 }
 
-// TODO
-void free_pages(void *pages, size_t size);
+/**
+ * @brief Free a previously allocated range of pages of physical memory.
+ * @param pages The first page to be freed.
+ * @param size The size of the range to be freed.
+ */
+void free_pages(void *pages, size_t size) {
+	size_t index = (size_t)pages / 4096 / 8;
+	size_t start_bit = (size_t)pages / 4096 % 8;
+
+	/* Fill bits that do not fill an entire byte */
+	if (start_bit != 0) {
+		for (int bit = start_bit; bit <= 8; ++bit) {
+			memmap[index] &= ~(1 << bit);
+			--size;
+		}
+		++index;
+	}
+
+	/* Fill entire bytes */
+	while (size > 8) {
+		memmap[index] = 0;
+		++index;
+		size -= 8;
+	}
+
+	/* Fill remaining bits */
+	if (size != 0) {
+		for (int bit = 0; bit < (int)size; ++bit) {
+			memmap[index] &= ~(1 << bit);
+			--size;
+		}
+		++index;
+	}
+}

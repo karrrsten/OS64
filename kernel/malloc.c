@@ -13,33 +13,35 @@ struct heap_header {
 	char data[];
 };
 
-/* start of the heap */
-static void *heap;
-static void *heap_end;
-/* pointer to the first allocated block */
-static struct heap_header *heap_head;
+static void *heap; /* Pointer to the start of the heap */
+static void *heap_end; /* Pointer to the end of the heap */
+static struct heap_header *heap_head; /* Pointer to the first allocated block */
 
+/**
+ * @brief Initialize the memory manager for calls to malloc() and friends.
+ * @param heap_start The linear start address of the heap.
+ * @param size The size of the heap.
+ */
 void heap_init(void *heap_start, size_t size) {
 	log("Initilizing heap...");
 	heap = heap_start;
 	heap_end = heap_start + size;
+
+	/* map the heap */
+	uint64_t temp = (uint64_t)heap_start;
+	temp += (temp % 4096 != 0) ? (4096 - temp % 4096) : 0;
+	void *ptr = (void *)temp;
+
+	for (; ptr <= heap_end; ptr += 4096) {
+		(void)mmap(alloc_page(), ptr, 4096, PAGE_PRESENT | PAGE_WRITE);
+	}
+	memset(heap, 0, size);
+
 	/* initialize a first block of size 0 on the heap */
 	heap_head = (struct heap_header *)heap_start;
 	heap_head->size = 0;
 	heap_head->next = NULL;
 
-	void *ptr = heap_start;
-	/* ptr needs to be page aligned, else previous mappings might be overridden
-	 */
-	uint64_t temp = (uint64_t)ptr;
-	temp += (temp % 4096 != 0) ? (4096 - temp % 4096) : 0;
-	ptr = (void *)temp;
-
-	/* map the heap */
-	for (; ptr <= heap_start + size; ptr += 4096) {
-		(void)mmap(alloc_page(), ptr, 4096, PAGE_PRESENT | PAGE_WRITE);
-	}
-	memset(heap, 0, size);
 	log("Initializing heap: Success");
 }
 

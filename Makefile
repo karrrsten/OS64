@@ -6,7 +6,7 @@ CC = clang-16
 QEMU = qemu-system-x86_64
 
 CFLAGS += -g -O0 -std=gnu2x -ffreestanding
-CFLAGS += -fms-extensions  -fwrapv -fwrapv-pointer -fno-strict-aliasing #TODO: -funsigned-char
+CFLAGS += -fms-extensions  -fwrapv -fno-strict-aliasing #TODO: -funsigned-char
 CFLAGS += -target x86_64-elf -mgeneral-regs-only -mno-red-zone -mcmodel=large
 CFLAGS += -Wall -Wextra -Werror
 CFLAGS += -I$(CURDIR) -nostdlib -static

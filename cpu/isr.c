@@ -10,23 +10,23 @@
 #define serial_write(...)
 
 #define DEFAULT_HANDLER_WITH_CODE(vec, err_str)                              \
-	[[gnu::interrupt, noreturn]] void isr##vec(                              \
+	[[gnu::interrupt, noreturn]] static void isr##vec(                       \
 		[[maybe_unused]] struct interrupt_frame *frame, uint64_t err_code) { \
 		handler_with_code(err_str, err_code);                                \
 	}
 
 #define DEFAULT_HANDLER_NO_CODE(vec, err_str)             \
-	[[gnu::interrupt, noreturn]] void isr##vec(           \
+	[[gnu::interrupt, noreturn]] static void isr##vec(    \
 		[[maybe_unused]] struct interrupt_frame *frame) { \
 		handler_no_code(err_str);                         \
 	}
 
-[[noreturn, gnu::no_caller_saved_registers]] void handler_with_code(
+[[noreturn, gnu::no_caller_saved_registers]] static void handler_with_code(
 	const char *err_str, uint64_t err_code) {
 	panic("An Error occured: \n Error: %s\n Code: 0x%p", err_str, err_code);
 }
 
-[[noreturn, gnu::no_caller_saved_registers]] void handler_no_code(
+[[noreturn, gnu::no_caller_saved_registers]] static void handler_no_code(
 	const char *err_str) {
 	panic("An Error occured: \n Error: %s\n No error code!", err_str);
 }
@@ -68,13 +68,14 @@ DEFAULT_HANDLER_WITH_CODE(30, "Security Exception")
 /* Vectors 32-255 are user defined, i.e. generated externally and handlers are
  * installed when the corresponding device is configured */
 
-[[gnu::no_caller_saved_registers]] void print_page_fault(uint64_t err_code) {
+[[gnu::no_caller_saved_registers]] static void print_page_fault(
+	uint64_t err_code) {
 	panic("An Error occured:\n Error: Page-Fault Exception\nCode: 0x%p\nPage "
 		  "fault linear address: 0x%p",
 		err_code, rcr2());
 }
 
-[[gnu::interrupt, noreturn]] void isr14(
+[[gnu::interrupt, noreturn]] static void isr14(
 	[[maybe_unused]] struct interrupt_frame *frame,
 	[[maybe_unused]] uint64_t err_code) {
 	print_page_fault(err_code);
