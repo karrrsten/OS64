@@ -40,20 +40,20 @@ void heap_init(void *heap_start, size_t size) {
 	/* initialize a first block of size 0 on the heap */
 	heap_head = (struct heap_header *)heap_start;
 	heap_head->size = 0;
-	heap_head->next = NULL;
+	heap_head->next = nullptr;
 
 	log("Initializing heap: Success");
 }
 
 void *malloc(size_t size) {
 	if (size > (size_t)(heap_end - heap)) {
-		return NULL;
+		return nullptr;
 	}
 	struct heap_header *current = heap_head;
 	/* first use of malloc, nothing has been allocated yet */
 	if (current->size == 0) {
 		current->size = size + sizeof(struct heap_header);
-		current->next = NULL;
+		current->next = nullptr;
 		return (void *)current->data;
 	}
 	/* is the block between heap and the first allocated block big enough? */
@@ -67,19 +67,19 @@ void *malloc(size_t size) {
 	}
 	do {
 		/* have we reached the end of the heap? */
-		if (current->next == NULL) {
+		if (current->next == nullptr) {
 			/* the heap is not big enough */
 			if ((void *)current->next + size > heap_end) {
-				return NULL;
+				return nullptr;
 			}
 			current->next
 				= (struct heap_header *)((void *)current + current->size);
-			current->next->next = NULL;
+			current->next->next = nullptr;
 			current->next->size = size + sizeof(struct heap_header);
 			return (void *)current->next->data;
 		}
 		current = current->next;
-	} while (current->next == NULL
+	} while (current->next == nullptr
 			 || ((ptrdiff_t)current->next - ((ptrdiff_t)current + current->size)
 				 <= size + sizeof(struct heap_header)));
 
@@ -92,7 +92,7 @@ void *malloc(size_t size) {
 }
 
 void free(void *ptr) {
-	if (ptr == NULL) {
+	if (ptr == nullptr) {
 		return;
 	}
 	/* the pointer points to the data of the block which is preceded by a
@@ -105,7 +105,7 @@ void free(void *ptr) {
 		heap_head = heap_head->next;
 		return;
 	}
-	while (current->next != NULL) {
+	while (current->next != nullptr) {
 		if ((void *)current->next == ptr) {
 			current->next = current->next->next;
 			return;
