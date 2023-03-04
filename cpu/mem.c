@@ -19,10 +19,11 @@ uint8_t *memmap; /* map of all of physical memory */
 uint8_t *memmap_phys; /* Physical address of memmap */
 size_t memmap_size;
 
+/**
+ * @brief Initialize the physical memory manager.
+ */
 void mem_init(void) {
 	log("Initializing physical memory allocator...");
-	// TODO: this could overrun into used memory
-	memmap = &_kernel_end;
 	struct limine_memmap_entry **memmap_entries
 		= limine_memmap_response->entries;
 
@@ -69,6 +70,11 @@ void mem_init(void) {
 	log("Initializing physical memory allocator: Success");
 }
 
+/**
+ * @brief Allocate a single page of physical memory. To be used before pg_init()
+ * was called.
+ * @return The address of a free page in memory.
+ */
 void *early_alloc_page(void) {
 	for (size_t index = 0; index < mem_max; ++index) {
 		if (~memmap_phys[index]) {
@@ -87,6 +93,10 @@ void *early_alloc_page(void) {
 	return nullptr;
 }
 
+/**
+ * @brief Allocate a single page of physical memory.
+ * @return The address of a free page in memory.
+ */
 void *alloc_page(void) {
 	for (size_t index = 0; index < mem_max; ++index) {
 		if (~memmap[index]) {
@@ -106,6 +116,10 @@ void *alloc_page(void) {
 // TODO
 void *alloc_pages(size_t size);
 
+/**
+ * @brief Mark a single page of physical memory as used.
+ * @param page The page to be marked as used.
+ */
 void mark_page_used(void *page) {
 	size_t index = (size_t)page / 4096 / 8;
 	int bit = (size_t)page / 4096 % 8;
@@ -115,6 +129,10 @@ void mark_page_used(void *page) {
 // TODO
 void mark_pages_used(void *pages);
 
+/**
+ * @brief Free a previously allocated page of physical memory.
+ * @param page The page to be freed.
+ */
 void free_page(void *page) {
 	size_t index = (size_t)page / 4096 / 8;
 	int bit = (size_t)page / 4096 % 8;

@@ -15,9 +15,26 @@ void gdt_init(void);
 
 void idt_init(void);
 
-#define GATE_TYPE_INT  (0xE)
+/**
+ * @def GATE_TYPE_INT
+ * @brief An interrupt gate of type INT, disables further
+ * interrupts.
+ */
+#define GATE_TYPE_INT (0xE)
+
+/**
+ * @def GATE_TYPE_INT
+ * @brief An interrupt gate of type TRAP, does not disable further
+ * interrupts.
+ */
+
 #define GATE_TYPE_TRAP (0xF)
 
+/**
+ * @struct interrupt_frame
+ * @brief The interrupt frame pushed by the cpu onto the stack when an interrupt
+ * happens. Can be used in [[gnu::interrupt]] handler functions.
+ */
 struct [[gnu::packed]] interrupt_frame {
 	uint64_t rip;
 	uint64_t cs : 16;

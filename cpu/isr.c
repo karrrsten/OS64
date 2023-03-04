@@ -83,6 +83,10 @@ DEFAULT_HANDLER_WITH_CODE(30, "Security Exception")
 	}
 }
 
+/**
+ * @brief Initialize the interrupt/exception handlers of the kernel, i.e.
+ * vectors 0-31.
+ */
 void isr_init(void) {
 	idt_register(0, (void *)&isr0, GATE_TYPE_INT);
 	idt_register(1, (void *)&isr1, GATE_TYPE_INT);

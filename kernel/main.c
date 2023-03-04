@@ -8,6 +8,9 @@
 
 #define HEAP_SIZE (16384)
 
+/**
+ * @brief The main kernel function.
+ */
 [[noreturn]] void kmain(void) {
 	kprint("\x1B[2J"); /* clear the serial console */
 	log("Initializing kernel...");

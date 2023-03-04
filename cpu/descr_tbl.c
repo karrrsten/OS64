@@ -56,6 +56,10 @@ volatile void *isr_stack;
 
 volatile char alignas(8) gdt[48];
 
+/**
+ * @brief Initialize the GDT with a kernel and a user code segment, a data
+ * segment for both an an entry for a tss.
+ */
 void gdt_init(void) {
 	log("Preparing GDT...");
 
@@ -118,6 +122,9 @@ ret:
 
 volatile alignas(16) __uint128_t idt[256];
 
+/**
+ * @brief Initialize and load the IDT.
+ */
 void idt_init(void) {
 	log("Initializing IDT...");
 	isr_init();
@@ -127,6 +134,14 @@ void idt_init(void) {
 	log("Loading IDT: Success");
 }
 
+/**
+ * @brief Register an intteruupt handler.
+ * @param vector The vector for which the handler should be registeres.
+ * @param handler The handler to be registerd.
+ * @param type The type of handler to registered.
+ * @see See GATE_TYPE_INT and GATE_TYPE_TRAP for information on the possible
+ * types.
+ */
 void idt_register(uint8_t vector, void *handler, uint64_t type) {
 	idt[vector]
 		= GATE_SPLIT_OFFSET(handler) | GATE_DESCR(GDT_KERNEL_CS) | SEG_PRESENT

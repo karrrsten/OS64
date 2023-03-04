@@ -9,16 +9,31 @@
 
 #define serial_putchar(c) outb(COM1, c)
 
+/**
+ * @brief Output a single char to the serial console.
+ * @param c The char to output.
+ */
 void kputchar(char c) {
 	serial_putchar(c);
 }
 
+/**
+ * @brief Output a string to the serial console.
+ * @param str A pointer to the string to output.
+ */
 void kprint(const char *str) {
 	for (; *str != '\0'; ++str) {
 		serial_putchar(*str);
 	}
 }
 
+/**
+ * @brief Output to the serial console
+ * @param format A C-style format string to output. Note that Format flags;
+ * field width; precision; wN, wfN, L, H, D, DD length modifiers; f/F, e/E, g/G,
+ * a/A format specifier; wide strings (length modifier l + format specifier c or
+ * s) are not allowed.
+ */
 int kprintf(const char *restrict format, ...) {
 	va_list arg;
 	va_start(arg);
@@ -41,6 +56,9 @@ enum LENGTH_MODIFIER {
 int print_signed(intmax_t val);
 int print_unsigned(uintmax_t val, char format);
 
+/**
+ * @see kprintf()
+ */
 int kvprintf(const char *restrict format, va_list arg) {
 	int ret = 0;
 	for (int n = 0; format[n] != '\0'; ++n) {

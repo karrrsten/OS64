@@ -24,6 +24,9 @@ alignas(PAGE_TABLE_ALIGN) volatile uint64_t pml4[512];
 
 void early_mmap(void *phys_addr, void *virt_addr, uint64_t flags);
 
+/**
+ * @brief Initialize the kernel's page tables.
+ */
 void pg_init(void) {
 	log("Initializing paging...");
 	uint64_t cr3
@@ -124,13 +127,23 @@ void map_single_page(uint64_t phys, uint64_t virt, uint64_t flags) {
 }
 
 // TODO: virt_addr = nullptr
+/**
+ * @brief Map physical memory to virtual memory.
+ * @param phys_addr The physical address. If it is a nullptr, physical
+ * memory is allocated.
+ * @param virt_addr The virtual address. If it is a nullptr, virtual memory is
+ * allocated.
+ * @param size The size of the region to map.
+ * @param flags The flags to be used for mapping. Must contain PAGE_PRESENT.
+ * @return The virtual address that was mapped.
+ */
 void *mmap(void *phys_addr, void *virt_addr, size_t size, uint64_t flags) {
 	uint64_t phys = (uint64_t)phys_addr;
 	uint64_t virt = (uint64_t)virt_addr;
 
 	if (virt_addr == nullptr)
 		panic("mmap does not currently support virt_addr == nullptr!");
-	for (; virt < virt + size; phys += 4096, virt += 4096) {
+	for (; virt <= virt + size; phys += 4096, virt += 4096) {
 		map_single_page(phys, virt, flags);
 	}
 	return virt_addr;
@@ -149,6 +162,11 @@ void unmap_single_page(uint64_t virt) {
 	invlpg((void *)virt);
 }
 
+/**
+ * @brief Unmap physical memory.
+ * @param virt_addr The virtual address of the mapping.
+ * @param size The size of the mapping.
+ */
 void munmap(void *virt_addr, size_t size) {
 	uint64_t virt = (uint64_t)virt_addr;
 	for (; virt < virt + size; virt += 4096) {
