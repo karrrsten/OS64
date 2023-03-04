@@ -3,6 +3,7 @@
 #include "cpu/descr_tbl.h"
 #include "cpu/mem.h"
 #include "cpu/page.h"
+#include "kernel/vmem.h"
 #include "util/log.h"
 #include "util/print.h"
 
@@ -19,6 +20,7 @@
 	mem_init();
 	pg_init();
 	heap_init(kernel_end, HEAP_SIZE);
+	vmem_init();
 
 	log("Initializing kernel: Success");
 	for (;;)

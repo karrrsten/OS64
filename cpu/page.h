@@ -1,5 +1,7 @@
 #pragma once
 
+#include "kernel/limine_reqs.h"
+
 #include <limine.h>
 #include <stddef.h>
 #include <stdint.h>

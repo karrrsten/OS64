@@ -4,6 +4,7 @@
 #include "x86.h"
 
 #include "kernel/limine_reqs.h"
+#include "kernel/vmem.h"
 #include "util/log.h"
 #include "util/print.h"
 
@@ -128,23 +129,23 @@ static void map_single_page(uint64_t phys, uint64_t virt, uint64_t flags) {
 	invlpg((void *)virt);
 }
 
-// TODO: virt_addr = nullptr
 /**
  * @brief Map physical memory to virtual memory.
- * @param phys_addr The physical address. If it is a nullptr, physical
- * memory is allocated.
- * @param virt_addr The virtual address. If it is a nullptr, virtual memory is
+ * @param phys_addr The physical address.
+ * @param virt_addr The virtual address. If it is nullptr, virtual memory is
  * allocated.
  * @param size The size of the region to map.
  * @param flags The flags to be used for mapping. Must contain PAGE_PRESENT.
  * @return The virtual address that was mapped.
  */
 void *mmap(void *phys_addr, void *virt_addr, size_t size, uint64_t flags) {
+	if (virt_addr == nullptr) {
+		virt_addr = vmem_alloc(size);
+	}
+
 	uint64_t phys = (uint64_t)phys_addr;
 	uint64_t virt = (uint64_t)virt_addr;
 
-	if (virt_addr == nullptr)
-		panic("mmap does not currently support virt_addr == nullptr!");
 	for (; virt <= virt + size; phys += 4096, virt += 4096) {
 		map_single_page(phys, virt, flags);
 	}
