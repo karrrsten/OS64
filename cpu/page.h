@@ -22,6 +22,6 @@
 
 void pg_init(void);
 
-void *mmap(void *phys_addr, void *virt_addr, size_t size, uint64_t flags);
+void *kmap(void *phys_addr, void *virt_addr, size_t size, uint64_t flags);
 
-void munmap(void *virt_addr, size_t size);
+void kunmap(void *virt_addr, size_t size);

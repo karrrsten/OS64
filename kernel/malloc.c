@@ -33,7 +33,7 @@ void heap_init(void *heap_start, size_t size) {
 	void *ptr = (void *)temp;
 
 	for (; ptr <= heap_end; ptr += 4096) {
-		(void)mmap(alloc_page(), ptr, 4096, PAGE_PRESENT | PAGE_WRITE);
+		(void)kmap(alloc_page(), ptr, 4096, PAGE_PRESENT | PAGE_WRITE);
 	}
 	memset(heap, 0, size);
 

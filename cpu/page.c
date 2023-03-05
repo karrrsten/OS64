@@ -138,7 +138,7 @@ static void map_single_page(uint64_t phys, uint64_t virt, uint64_t flags) {
  * @param flags The flags to be used for mapping. Must contain PAGE_PRESENT.
  * @return The virtual address that was mapped.
  */
-void *mmap(void *phys_addr, void *virt_addr, size_t size, uint64_t flags) {
+void *kmap(void *phys_addr, void *virt_addr, size_t size, uint64_t flags) {
 	if (virt_addr == nullptr) {
 		virt_addr = vmem_alloc(size);
 	}
@@ -170,7 +170,7 @@ static void unmap_single_page(uint64_t virt) {
  * @param virt_addr The virtual address of the mapping.
  * @param size The size of the mapping.
  */
-void munmap(void *virt_addr, size_t size) {
+void kunmap(void *virt_addr, size_t size) {
 	uint64_t virt = (uint64_t)virt_addr;
 	for (; virt <= virt + size; virt += 4096) {
 		unmap_single_page(virt);
