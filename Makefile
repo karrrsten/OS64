@@ -1,6 +1,7 @@
 SRC = $(shell find . -name '*.[c|s|S]')
 OBJ = $(SRC:%=build/%.o)
 DEP = $(OBJ:%.o=%.d)
+CC_CMD_JSON = $(OBJ:%.o=%.json)
 
 CC = clang-16
 QEMU = qemu-system-x86_64
@@ -22,10 +23,7 @@ IMG_MOUNT = build/img_mount
 KERNEL = build/kernel.elf
 
 .PHONY: all
-all: $(IMG)
-
-.PHONY: kernel
-kernel: $(KERNEL)
+all: $(IMG) compile_commands.json
 
 # run the kernel in qemu
 .PHONY: run
@@ -41,29 +39,30 @@ debug: all
 	-killall qemu-system-x86_64
 
 # run the kernel and provide a gdb stub to connect to
-.PHONY: debug_server
-debug_server: all
+.PHONY: debug-server
+debug-server: all
 	-killall qemu-system-x86_64
 	$(QEMU) $(QEMU_FLAGS) -s -S
 
-$(IMG): build $(KERNEL) limine.cfg
+
+
+compile_commands.json: $(CC_CMD_JSON)
+	sed -e '1s/^/[\n/' -e '$$s/,$$/\n]/' $(CC_CMD_JSON) > compile_commands.json
+
+$(IMG): build limine.cfg $(KERNEL)
 	qemu-img create $(IMG) 1G
 
-# format the image/loop device and deploy limine
 	parted -s $(IMG) mklabel gpt
 	parted -s $(IMG) mkpart esp fat32 2048s 100%
 	parted -s $(IMG) set 1 esp on
 	limine-deploy $(IMG)
 
-# setup a loop device for the image/partition
 	$(eval LOOP_DEV=$(shell sudo losetup -f))
 	sudo losetup $(LOOP_DEV) $(IMG)
 	sudo partprobe $(LOOP_DEV)
 
-# format the partition
 	sudo mkfs.fat -F 32 $(LOOP_DEV)p1
 
-# copy the kernel and other required files
 	sudo mount $(LOOP_DEV)p1 $(IMG_MOUNT)
 	sudo mkdir -p $(IMG_MOUNT)/limine
 	sudo mkdir -p $(IMG_MOUNT)/EFI/BOOT
@@ -71,14 +70,11 @@ $(IMG): build $(KERNEL) limine.cfg
 	sudo cp limine.cfg /usr/local/share/limine/limine.sys $(IMG_MOUNT)/limine
 	sudo cp /usr/local/share/limine/BOOTX64.EFI $(IMG_MOUNT)/EFI/BOOT
 
-# disconnect the loop device/image
 	sync
 	sudo umount $(IMG_MOUNT)
 	sudo losetup -d $(LOOP_DEV)
 
 build:
-# prepare the build/ directories,
-# each source directory should have a corresponding directory in build/
 	$(eval build=$(shell find . -type d \
 	! -path './.*' \
 	! -path './build' ! -path './build/*'))
@@ -93,9 +89,10 @@ $(KERNEL): build $(OBJ) linker.ld
 -include $(DEP)
 
 build/%.o: % | build
-	$(CC) $(CFLAGS) -MMD -c $< -o $@
+	$(CC) -MJ build/$<.json $(CFLAGS) -MMD -c $< -o $@
 
 .PHONY: clean
 clean:
 	rm -rf build
 	rm -rf qemu.log
+	rm -rf compile_commands.json
