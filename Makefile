@@ -33,16 +33,23 @@ run: all
 # run the kernel and connect with gdb
 .PHONY: debug
 debug: all
-	-killall qemu-system-x86_64
+	-killall $(QEMU)
 	$(QEMU) $(QEMU_FLAGS) -s -S &
 	gdb -q -symbols=$(KERNEL) -ex "target remote localhost:1234"
-	-killall qemu-system-x86_64
+	-killall $(QEMU)
 
 # run the kernel and provide a gdb stub to connect to
 .PHONY: debug-server
 debug-server: all
-	-killall qemu-system-x86_64
+	-killall $(QEMU)
 	$(QEMU) $(QEMU_FLAGS) -s -S
+
+# run the kernel and connect with seergdb for debugging
+.PHONY: debug-gui
+debug-gui:
+	-killal $(QEMU)
+	$(QEMU) $(QEMU_FLAGS) -s -S &
+	seergdb --sym $(KERNEL) --connect localhost:1234
 
 
 
