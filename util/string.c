@@ -63,10 +63,8 @@ int memcmp(const void *s1, const void *s2, size_t n) {
 	const char *str1 = (const char *)s1;
 	const char *str2 = (const char *)s2;
 	for (size_t i = 0; i < n; ++i) {
-		if (str1[i] > str2[i]) {
-			return 1;
-		} else if (str1[i] < str2[i]) {
-			return -1;
+		if (str1[i] != str2[i]) {
+			return str1[i] - str2[i];
 		}
 	}
 	return 0;
@@ -80,32 +78,20 @@ int strcmp(const char *s1, const char *s2) {
 		}
 	}
 
-	if (s1[i] > s2[i]) {
-		return 1;
-	} else if (s1[i] < s2[i]) {
-		return -1;
-	} else {
-		return 0;
-	}
+	--i;
+	return s1[i] - s2[i];
 }
 
 int strncmp(const char *s1, const char *s2, size_t n) {
 	size_t i = 0;
-	for (; s1[i] != 0; ++i) {
+	for (; s1[i] != 0 && i < n; ++i) {
 		if (s1[i] != s2[i]) {
-			break;
-		} else if (i >= n) {
 			break;
 		}
 	}
 
-	if (s1[i] > s2[i]) {
-		return 1;
-	} else if (s1[i] < s2[i]) {
-		return -1;
-	} else {
-		return 0;
-	}
+	--i;
+	return s1[i] - s2[i];
 }
 
 void *memset(void *s, int c, size_t n) {
