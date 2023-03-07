@@ -27,7 +27,6 @@ void vmem_init(void) {
 
 	vheap_start = (void *)HIGHER_HALF_BASE + mem_max;
 	vheap_end = (void *)KERNEL_BASE;
-	log("%p %p", vheap_start, vheap_end);
 
 	vheap_head = malloc(sizeof(*vheap_head));
 	if (!vheap_head) {
