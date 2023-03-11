@@ -42,7 +42,6 @@ void *acpi_get_table(char *signature) {
 	xsdt_entries = (struct sdt_header **)xsdt->Entry;
 	for (size_t i = 0; i < xsdt_num_entries; ++i) {
 		struct sdt_header *table = P2V(xsdt_entries[i]);
-		log("%s", table->Signature);
 		if (!strncmp(table->Signature, signature, 4)) {
 			if (!check_table(table)) {
 				continue;

@@ -25,7 +25,11 @@ static void *vheap_end;
 void vmem_init(void) {
 	log("Initializing virtual heap...");
 
-	vheap_start = (void *)HIGHER_HALF_BASE + mem_max;
+	vheap_start
+		= (void *)HIGHER_HALF_BASE + mem_max
+	    + ((mem_max % 0x4000'0000 /* 1GB */ != 0)
+				? (0x4000'0000 - mem_max % 0x4000'0000)
+				: 0);
 	vheap_end = (void *)KERNEL_BASE;
 
 	vheap_head = malloc(sizeof(*vheap_head));
@@ -36,7 +40,7 @@ void vmem_init(void) {
 	vheap_head->addr = (void *)vheap_start;
 	vheap_head->size = 0;
 	vheap_head->next = nullptr;
-	log("Initializing virtual heap: Success!");
+	log("Initializing virtual heap: Success");
 }
 
 /**

@@ -47,10 +47,10 @@ debug-server: all
 # run the kernel and connect with seergdb for debugging
 .PHONY: debug-gui
 debug-gui:
-	-killal $(QEMU)
+	-killall $(QEMU)
 	$(QEMU) $(QEMU_FLAGS) -s -S &
 	seergdb --sym $(KERNEL) --connect localhost:1234
-
+	-killall $(QEMU)
 
 
 compile_commands.json: $(CC_CMD_JSON)

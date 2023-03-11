@@ -146,7 +146,7 @@ void *kmap(void *phys_addr, void *virt_addr, size_t size, uint64_t flags) {
 	uint64_t phys = (uint64_t)phys_addr;
 	uint64_t virt = (uint64_t)virt_addr;
 
-	for (; virt <= virt + size; phys += 4096, virt += 4096) {
+	for (; virt < (uint64_t)virt_addr + size; phys += 4096, virt += 4096) {
 		map_single_page(phys, virt, flags);
 	}
 	return virt_addr;

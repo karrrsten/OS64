@@ -83,9 +83,9 @@ static inline void __rdmsr(uint32_t msr, uint32_t *low, uint32_t *high) {
 }
 
 static inline uint64_t rdmsr(uint32_t msr) {
-	uint32_t *low = 0, *high = 0;
-	__rdmsr(msr, low, high);
-	return ((uint64_t)*high << 32) | *low;
+	uint32_t low, high;
+	__rdmsr(msr, &low, &high);
+	return ((uint64_t)high << 32) | low;
 }
 
 static inline uint64_t rcr2() {
