@@ -1,5 +1,6 @@
 #include "malloc.h"
 
+#include "cpu/apic.h"
 #include "cpu/descr_tbl.h"
 #include "cpu/mem.h"
 #include "cpu/page.h"
@@ -21,6 +22,7 @@
 	pg_init();
 	heap_init(kernel_end, HEAP_SIZE);
 	vmem_init();
+	apic_init();
 
 	log("Initializing kernel: Success");
 	for (;;)

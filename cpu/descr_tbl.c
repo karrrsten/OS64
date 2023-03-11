@@ -135,8 +135,22 @@ void idt_init(void) {
 }
 
 /**
+ * @brief Allocate a vector in the idt.
+ * @return The allocated vector or -1 if no vector was free
+ */
+int idt_alloc_vector(void) {
+	for (int i = 0; i < 256; ++i) {
+		if (!idt[i]) {
+			return i;
+		}
+	}
+
+	return -1;
+}
+
+/**
  * @brief Register an intteruupt handler.
- * @param vector The vector for which the handler should be registeres.
+ * @param vector The vector for which the handler should be registered.
  * @param handler The handler to be registerd.
  * @param type The type of handler to registered.
  * @see See GATE_TYPE_INT and GATE_TYPE_TRAP for information on the possible

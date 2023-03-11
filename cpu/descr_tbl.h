@@ -15,6 +15,8 @@ void gdt_init(void);
 
 void idt_init(void);
 
+int idt_alloc_vector(void);
+
 /**
  * @def GATE_TYPE_INT
  * @brief An interrupt gate of type INT, disables further
@@ -27,7 +29,6 @@ void idt_init(void);
  * @brief An interrupt gate of type TRAP, does not disable further
  * interrupts.
  */
-
 #define GATE_TYPE_TRAP (0xF)
 
 /**

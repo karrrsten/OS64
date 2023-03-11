@@ -55,6 +55,7 @@ struct [[gnu::packed]] XSDT {
 struct [[gnu::packed]] MADT {
 	struct sdt_header;
 	uint32_t Local_Interrupt_Controller_Address;
-	uint32_t Flags;
+	uint32_t PCAT_COMPAT : 1;
+	uint32_t             : 31;
 	char Interrupt_Controller_Structure[];
 };
