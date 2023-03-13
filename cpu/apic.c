@@ -1,6 +1,7 @@
 #include "apic.h"
 
 #include "idt.h"
+#include "ioapic.h"
 #include "mem.h"
 #include "page.h"
 #include "x86.h"
@@ -33,12 +34,7 @@ void apic_eoi(void) {
 	lapic_write(APIC_EOI, 0);
 }
 
-[[gnu::interrupt]] void apic_spurious_handler(struct interrupt_frame *) {
-	return;
-}
-
-// TODO
-void ioapic_init(void) {
+void apic_spurious_handler(struct interrupt_frame *) {
 	return;
 }
 
