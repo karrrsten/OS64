@@ -1,6 +1,6 @@
 #include "apic.h"
 
-#include "descr_tbl.h"
+#include "idt.h"
 #include "mem.h"
 #include "x86.h"
 
@@ -145,7 +145,7 @@ void apic_init(void) {
 	}
 	ioapic_init();
 
-	idt_register(0xFF, &apic_spurious_handler, GATE_TYPE_INT);
+	idt_register(0xFF, apic_spurious_handler);
 	lapic_write(APIC_SPURIOUS_INT, APIC_SOFTWARE_ENABLE | 0xFF);
 	wrmsr(IA32_APIC_BASE_MSR, rdmsr(IA32_APIC_BASE_MSR) | APIC_MSR_ENABLE);
 	log("Initializing APIC: Success");

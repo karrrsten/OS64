@@ -1,7 +1,8 @@
 #include "malloc.h"
 
 #include "cpu/apic.h"
-#include "cpu/descr_tbl.h"
+#include "cpu/apic_timer.h"
+#include "cpu/gdt.h"
 #include "cpu/mem.h"
 #include "cpu/page.h"
 #include "kernel/vmem.h"

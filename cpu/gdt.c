@@ -1,4 +1,4 @@
-#include "descr_tbl.h"
+#include "gdt.h"
 
 #include "isr.h"
 #include "x86.h"
@@ -8,13 +8,6 @@
 
 #include <stdalign.h>
 #include <stdint.h>
-
-#define SEG_DPL_0   ((uint64_t)0 << 45)
-#define SEG_DPL_3   ((uint64_t)3 << 45)
-#define SEG_PRESENT ((uint64_t)1 << 47)
-
-#define SEG_CODE ((uint64_t)0b11 << 43)
-#define SEG_DATA ((uint64_t)0b10 << 43)
 
 #define CS_CONFORMING      ((uint64_t)1 << 42)
 #define CS_LONG_MODE       ((uint64_t)1 << 53)
@@ -112,52 +105,4 @@ void gdt_init(void) {
 		: ret);
 ret:
 	log("Loading segment registers: Success");
-}
-
-#define GATE_SPLIT_OFFSET(handler)   \
-	(((__uint128_t)handler & 0xFFFF) \
-		| (((__uint128_t)handler & 0xFFFF'FFFF'FFFF'0000) >> 16) << 48)
-#define GATE_DESCR(descr) ((__uint128_t)descr << 16)
-#define GATE_TYPE(type)   ((__uint128_t)type << 40)
-
-static volatile alignas(16) __uint128_t idt[256];
-
-/**
- * @brief Initialize and load the IDT.
- */
-void idt_init(void) {
-	log("Initializing IDT...");
-	isr_init();
-	log("Initializing IDT: Success");
-	log("Loading IDT...");
-	lidt(sizeof(idt) - 1, (uint64_t)idt);
-	log("Loading IDT: Success");
-}
-
-/**
- * @brief Allocate a vector in the idt.
- * @return The allocated vector or -1 if no vector was free
- */
-int idt_alloc_vector(void) {
-	for (int i = 0; i < 256; ++i) {
-		if (!idt[i]) {
-			return i;
-		}
-	}
-
-	return -1;
-}
-
-/**
- * @brief Register an intteruupt handler.
- * @param vector The vector for which the handler should be registered.
- * @param handler The handler to be registerd.
- * @param type The type of handler to registered.
- * @see See GATE_TYPE_INT and GATE_TYPE_TRAP for information on the possible
- * types.
- */
-void idt_register(uint8_t vector, void *handler, uint64_t type) {
-	idt[vector]
-		= GATE_SPLIT_OFFSET(handler) | GATE_DESCR(GDT_KERNEL_CS) | SEG_PRESENT
-	    | SEG_DPL_0 | GATE_TYPE(type);
 }
