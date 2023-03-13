@@ -2,9 +2,9 @@
 
 #include "idt.h"
 #include "mem.h"
+#include "page.h"
 #include "x86.h"
 
-#include "cpu/page.h"
 #include "kernel/acpi.h"
 #include "kernel/acpi_tables.h"
 #include "util/log.h"
@@ -16,44 +16,15 @@
 
 #define APIC_SOFTWARE_ENABLE (1 << 8)
 
-#define APIC_LVT_MASK (1 << 16)
-
-enum apic_reg : uint32_t {
-	APIC_ID = 0x20,
-	APIC_VERSION = 0x30,
-	APIC_TPR = 0x80,
-	APIC_APR = 0x90,
-	APIC_PPR = 0xA0,
-	APIC_EOI = 0xB0,
-	APIC_RRD = 0xC0,
-	APIC_LOGICAL_DESTINATION = 0xD0,
-	APIC_DESTINATION_FORMAT = 0xE0,
-	APIC_SPURIOUS_INT = 0xF0,
-	/* skipping the In-Service, Trigger Mode and Interrupt Request Registers */
-	APIC_ERROR_STATUS = 0x280,
-	APIC_LVT_CMCI = 0x2F0,
-	APIC_ICR_LOW = 0x300,
-	APIC_ICR_HIGH = 0x310,
-	APIC_LVT_TIMER = 0x320,
-	APIC_LVT_THERMAL = 0x330,
-	APIC_LVT_PERFORMANCE = 0x340,
-	APIC_LVT_LINT0 = 0x350,
-	APIC_LVT_LINT1 = 0x360,
-	APIC_LVT_ERROR = 0x370,
-	APIC_TIMER_INIT = 0x380,
-	APIC_TIMER_CURRENT = 0x390,
-	APIC_TIMER_DIVIDE = 0x3E0
-};
-
+uint8_t lapic_id;
 static volatile uint32_t *lapic;
-static uint8_t lapic_id;
 
-static void lapic_write(enum apic_reg reg, uint32_t val) {
+void lapic_write(enum apic_reg reg, uint32_t val) {
 	/* reg is an absolut offset, lapic is a pointer to 4-byte values */
 	*(lapic + reg / 4) = val;
 }
 
-static uint32_t lapic_read(enum apic_reg reg) {
+uint32_t lapic_read(enum apic_reg reg) {
 	/* reg is an absolut offset, lapic is a pointer to 4-byte values */
 	return *(lapic + reg / 4);
 }
@@ -117,8 +88,7 @@ void apic_init(void) {
 	madt_entry = madt->Interrupt_Controller_Structure;
 	for (; (void *)madt_entry < (void *)madt + madt->Length;
 		 madt_entry += *(madt_entry + 1)) {
-		/* Local APIC NMI */
-		if (madt_entry[0] != 4) {
+		if (madt_entry[0] != 4 /* Local APIC NMI */) {
 			continue;
 		}
 

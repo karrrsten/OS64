@@ -3,8 +3,10 @@
 #include "cpu/apic.h"
 #include "cpu/apic_timer.h"
 #include "cpu/gdt.h"
+#include "cpu/idt.h"
 #include "cpu/mem.h"
 #include "cpu/page.h"
+#include "cpu/x86.h"
 #include "kernel/vmem.h"
 #include "util/log.h"
 #include "util/print.h"
@@ -24,6 +26,7 @@
 	heap_init(kernel_end, HEAP_SIZE);
 	vmem_init();
 	apic_init();
+	sti();
 
 	log("Initializing kernel: Success");
 	for (;;)
