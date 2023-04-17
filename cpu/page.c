@@ -11,9 +11,9 @@
 #include <stdalign.h>
 #include <stdint.h>
 
-#define ADDR_MASK_4K (0xF'FFFF'FFFF'F000)
-#define ADDR_MASK_2M (0xF'FFFF'FFF0'0000)
-#define ADDR_MASK_1G (0xF'FFFF'E000'0000)
+#define ADDR_MASK_4K (0xF'FFFF'FFFF'F000lu)
+#define ADDR_MASK_2M (0xF'FFFF'FFF0'0000lu)
+#define ADDR_MASK_1G (0xF'FFFF'E000'0000lu)
 
 #define PML4_INDEX(addr) ((addr >> 39) & 0x1FF)
 #define PDP_INDEX(addr)  ((virt >> 30) & 0x1FF)
@@ -63,6 +63,45 @@ void pg_init(void) {
 	log("Loading CR3...");
 	wcr3(cr3);
 	log("Loading CR3: Success");
+}
+
+/**
+ * @brief Get the physical address corresponding to a virtual address.
+ * @param virt_addr The virtual address to look up.
+ * @return The correpsonding physical address or nullptr if the address is
+ * currently not mapped.*/
+void *get_physical_address(void *virt_addr) {
+	uint64_t virt = (uint64_t)virt_addr;
+	unsigned pml4_index = PML4_INDEX(virt);
+	unsigned pdp_index = PDP_INDEX(virt);
+	unsigned pd_index = PD_INDEX(virt);
+	unsigned pt_index = PT_INDEX(virt);
+
+
+	if (!pml4[pml4_index]) {
+		return nullptr;
+	}
+
+	uint64_t *pdp = P2V((uint64_t *)(pml4[pml4_index] & ADDR_MASK_4K));
+	if (!pdp[pdp_index]) {
+		return nullptr;
+	} else if (pdp[pdp_index] & PAGE_SIZE) {
+		/* Also account for the offset into the page */
+		return (
+			void *)((pdp[pdp_index] & ADDR_MASK_1G) + (virt & ~ADDR_MASK_1G));
+	}
+
+	uint64_t *pd = P2V((uint64_t *)(pdp[pdp_index] & ADDR_MASK_4K));
+	if (!pd[pd_index]) {
+		return nullptr;
+	} else if (pd[pd_index] & PAGE_SIZE) {
+		/* Also account for the offset into the page */
+		return (void *)((pd[pd_index] & ADDR_MASK_2M) + (virt & ~ADDR_MASK_2M));
+	}
+
+	uint64_t *pt = P2V((uint64_t *)(pd[pd_index] & ADDR_MASK_4K));
+	/* Also account for the offset into the page */
+	return (void *)(pt[pt_index] & ADDR_MASK_4K) + (virt & ~ADDR_MASK_4K);
 }
 
 static void early_mmap(void *phys_addr, void *virt_addr, uint64_t flags) {
