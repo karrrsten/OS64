@@ -91,7 +91,7 @@ int kvprintf(const char *restrict format, va_list arg) {
 		case 'h':
 			if (format[n + 1] == 'h') {
 				length_modifier = CHAR;
-				n += 2;
+				++n;
 			} else {
 				length_modifier = SHORT;
 			}
