@@ -3,7 +3,6 @@
 #include "cpu/apic.h"
 #include "cpu/page.h"
 #include "kernel/acpi.h"
-#include "kernel/acpi_tables.h"
 #include "kernel/malloc.h"
 #include "util/log.h"
 

@@ -7,7 +7,6 @@
 #include "x86.h"
 
 #include "kernel/acpi.h"
-#include "kernel/acpi_tables.h"
 #include "util/log.h"
 
 #include <stdint.h>
