@@ -27,6 +27,7 @@ BinPackArguments: true
 BinPackParameters: true
 BitFieldColonSpacing: 'Both'
 #"BreakBeforeBraces: custom": BraceWrapping
+BreakAfterAttributes: 'Leave'
 BreakAfterJavaFieldAnnotations: true
 BreakArrays: true
 BreakBeforeBinaryOperators: 'All'
@@ -72,13 +73,19 @@ IndentRequiresClause: true
 IndentWidth: 4
 IndentWrappedFunctionNames: false
 InsertBraces: false
+InsertNewlineAtEOF: true
 InsertTrailingCommas: 'None'
+IntegerLiteralSeparator:
+  Binary: 4
+  Decimal: -1
+  Hex: 4
 JavaImportGroups: []
 JavaScriptQuotes: 'Double'
 JavaScriptWrapImports: true
 KeepEmptyLinesAtTheStartOfBlocks: false
 LambdaBodyIndentation: 'Signature'
 # Language
+LineEnding: 'DeriveLF'
 MacroBlockBegin: ''
 MacroBlockEnd: ''
 MaxEmptyLinesToKeep: 2
