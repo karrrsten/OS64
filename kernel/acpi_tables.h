@@ -59,3 +59,14 @@ struct [[gnu::packed]] MADT {
 	uint32_t             : 31;
 	char Interrupt_Controller_Structure[];
 };
+
+#define ACPI_MCFG          \
+	(char[4]) {            \
+		'M', 'C', 'F', 'G' \
+	}
+
+struct [[gnu::packed]] MCFG {
+	struct sdt_header;
+	uint64_t : 64;
+	char entries[];
+};

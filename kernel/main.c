@@ -7,6 +7,7 @@
 #include "cpu/mem.h"
 #include "cpu/page.h"
 #include "cpu/x86.h"
+#include "drivers/pci.h"
 #include "kernel/vmem.h"
 #include "util/log.h"
 #include "util/print.h"
@@ -26,6 +27,8 @@
 	heap_init(kernel_end, HEAP_SIZE);
 	vmem_init();
 	apic_init();
+
+	pci_init();
 	sti();
 
 	log("Initializing kernel: Success");
