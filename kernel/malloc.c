@@ -5,6 +5,7 @@
 #include "util/log.h"
 #include "util/string.h"
 
+#include <stddef.h>
 #include <stdint.h>
 
 struct heap_header {
@@ -115,9 +116,21 @@ void free(void *ptr) {
 }
 
 void *realloc(void *ptr, size_t size) {
+	if (!ptr) {
+		return malloc(size);
+	}
+
+	struct heap_header *header = ptr - sizeof(*header);
+	if ((header->next == nullptr
+			&& ((uint64_t)header + size) < (uint64_t)heap_end)
+		|| ((uint64_t)header + size) < (uint64_t)header->next) {
+		header->size = size;
+		return ptr;
+	}
+
 	void *new_ptr = malloc(size);
 	if (new_ptr) {
-		memcpy(new_ptr, ptr, size);
+		memcpy(new_ptr, ptr, header->size);
 		free(ptr);
 	}
 	return new_ptr;
