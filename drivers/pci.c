@@ -32,7 +32,6 @@ static void register_function(void *function_base, uint16_t segment_group,
 		panic("Failed to allocate memory!");
 	}
 
-
 	uint8_t class = *(uint8_t *)(function_base + 11);
 	uint8_t subclass = *(uint8_t *)(function_base + 10);
 	uint8_t prog_if = *(uint8_t *)(function_base + 9);
