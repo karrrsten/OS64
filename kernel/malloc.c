@@ -48,7 +48,8 @@ void heap_init(void *heap_start, size_t size) {
 
 void *malloc(size_t size) {
 	if (size > (size_t)(heap_end - heap)) {
-		return nullptr;
+		panic("Failed to allocate memory!"); /* Failed allocations aren't
+		                                        handled anyway right now */
 	}
 	struct heap_header *current = heap_head;
 	/* first use of malloc, nothing has been allocated yet */
@@ -71,7 +72,9 @@ void *malloc(size_t size) {
 		if (current->next == nullptr) {
 			/* the heap is not big enough */
 			if ((void *)current->next + size > heap_end) {
-				return nullptr;
+				panic("Failed to allocate memory!"); /* Failed allocations
+				                                        aren't handled anyway
+				                                        right now */
 			}
 			current->next
 				= (struct heap_header *)((void *)current + current->size);

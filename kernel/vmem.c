@@ -33,9 +33,6 @@ void vmem_init(void) {
 	vheap_end = (void *)KERNEL_BASE;
 
 	vheap_head = malloc(sizeof(*vheap_head));
-	if (!vheap_head) {
-		panic("Failed to allocate memory!");
-	}
 
 	vheap_head->addr = (void *)vheap_start;
 	vheap_head->size = 0;
@@ -61,9 +58,6 @@ void *vmem_alloc(size_t size) {
 	/* Is there enough space at the start of the virtual heap? */
 	if ((size_t)(vheap_head->addr - vheap_start) >= size) {
 		vheap_head = malloc(sizeof(*vheap_head));
-		if (!vheap_head) {
-			panic("Failed to allocate memory!");
-		}
 		vheap_head->addr = vheap_start;
 		vheap_head->size = size;
 		vheap_head->next = current;
@@ -76,10 +70,6 @@ void *vmem_alloc(size_t size) {
 			struct vheap_header *temp = current->next;
 
 			current->next = malloc(sizeof(*current));
-			if (!current) {
-				panic("Failed to allocate memory!");
-			}
-
 			current->next->addr = current->addr + current->size;
 			current->next->size = size;
 			current->next->next = temp;
@@ -92,10 +82,6 @@ void *vmem_alloc(size_t size) {
 	/* current->next == nullptr */
 	if ((size_t)vheap_end - ((size_t)current->addr + current->size) >= size) {
 		current->next = malloc(sizeof(*current));
-		if (!current) {
-			panic("Failed to allocate memory!");
-		}
-
 		current->next->addr = current->addr + current->size;
 		current->next->size = size;
 		current->next->next = nullptr;
