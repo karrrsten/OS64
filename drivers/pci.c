@@ -1,5 +1,7 @@
 #include "pci.h"
 
+#include "pci_config_space.h"
+
 #include "cpu/page.h"
 #include "kernel/acpi.h"
 #include "kernel/acpi_tables.h"
@@ -10,80 +12,143 @@
 #include <stdint.h>
 
 struct pci_func {
-	void *base_address; /* Base address in virtual memory */
-	uint16_t segment_group;
-	uint8_t bus_number;
-	uint8_t device;
-	uint8_t function;
+	union pci_config_space *config_space;
+	void *phys_address; /* Physical address of config space */
+	struct pci_func *next;
+	struct pci_dev *parent;
+	uint8_t function_number;
 	uint8_t class;
 	uint8_t subclass;
 	uint8_t prog_if;
-	void *phys_address;
 };
 
-struct pci_func *pci_functions; /* Linked list of all PCI functions */
-size_t num_pci_functions = 0;
+struct pci_dev {
+	struct pci_func *functions;
+	struct pci_dev *next;
+	struct pci_bus *parent;
+	uint8_t device_number;
+};
 
-static void register_function(void *function_base, uint16_t segment_group,
-	uint8_t bus_number, uint8_t device, uint8_t function) {
-	pci_functions = realloc(pci_functions,
-		(++num_pci_functions) * sizeof(*pci_functions));
-	if (!pci_functions) {
-		panic("Failed to allocate memory!");
+struct pci_bus {
+	struct pci_dev *devices;
+	struct pci_bus *next;
+	struct pci_group *parent;
+	uint8_t bus_number;
+};
+
+struct pci_group {
+	struct pci_bus *busses;
+	struct pci_group *next;
+	uint16_t group_number;
+};
+
+struct pci_group *pci_tree = nullptr;
+
+static void register_function(union pci_config_space *config_space,
+	uint16_t group_number, uint8_t bus_number, uint8_t device_number,
+	uint8_t function_number) {
+	struct pci_group *group;
+	struct pci_bus *bus;
+	struct pci_dev *dev;
+	struct pci_func *func;
+
+	uint8_t class = config_space->class;
+	uint8_t subclass = config_space->subclass;
+	uint8_t prog_if = config_space->prog_if;
+	log("Function %hX:%hhX:%hhX:%hhX of type %hhX:%hhX:%hhX", group_number,
+		bus_number, device_number, function_number, class, subclass, prog_if);
+
+	for (group = pci_tree; group != nullptr; group = group->next) {
+		if (group->group_number == group_number) {
+			break;
+		}
+	}
+	if (!group) {
+		struct pci_group *temp = pci_tree;
+		pci_tree = malloc(sizeof(struct pci_group));
+		group = pci_tree;
+		group->busses = nullptr;
+		group->next = temp;
+		group->group_number = group_number;
 	}
 
-	uint8_t class = *(uint8_t *)(function_base + 11);
-	uint8_t subclass = *(uint8_t *)(function_base + 10);
-	uint8_t prog_if = *(uint8_t *)(function_base + 9);
-	log("Function %hX:%hhX:%hhX:%hhX of type %hhX:%hhX:%hhX", segment_group,
-		bus_number, device, function, class, subclass, prog_if);
+	for (bus = group->busses; bus != nullptr; bus = bus->next) {
+		if (bus->bus_number == bus_number) {
+			break;
+		}
+	}
+	if (!bus) {
+		struct pci_bus *temp = group->busses;
+		group->busses = malloc(sizeof(struct pci_bus));
+		bus = group->busses;
+		bus->devices = nullptr;
+		bus->next = temp;
+		bus->parent = group;
+		bus->bus_number = bus_number;
+	}
 
-	pci_functions[num_pci_functions - 1].base_address = function_base;
-	pci_functions[num_pci_functions - 1].segment_group = segment_group;
-	pci_functions[num_pci_functions - 1].bus_number = bus_number;
-	pci_functions[num_pci_functions - 1].device = device;
-	pci_functions[num_pci_functions - 1].function = function;
-	pci_functions[num_pci_functions - 1].class = class;
-	pci_functions[num_pci_functions - 1].subclass = subclass;
-	pci_functions[num_pci_functions - 1].prog_if = prog_if;
-	pci_functions[num_pci_functions - 1].phys_address
-		= get_physical_address(function_base);
+	for (dev = bus->devices; dev != nullptr; dev = dev->next) {
+		if (dev->device_number == device_number) {
+			break;
+		}
+	}
+	if (!dev) {
+		struct pci_dev *temp = bus->devices;
+		bus->devices = malloc(sizeof(struct pci_dev));
+		dev = bus->devices;
+		dev->functions = nullptr;
+		dev->next = temp;
+		dev->parent = bus;
+		dev->device_number = device_number;
+	}
+
+	struct pci_func *temp = dev->functions;
+	dev->functions = malloc(sizeof(struct pci_func));
+	func = dev->functions;
+
+	func->next = temp;
+	func->parent = dev;
+	func->function_number = function_number;
+	func->config_space = config_space;
+	func->phys_address = get_physical_address((void *)config_space);
+	func->class = class;
+	func->subclass = subclass;
+	func->prog_if = prog_if;
 }
 
-static void check_device(void *base_address, uint16_t segment_group,
-	uint8_t bus_number, uint8_t device) {
-	uint16_t vendor_id = *(uint16_t *)(base_address);
+static void check_device(union pci_config_space *config_space,
+	uint16_t segment_group, uint8_t bus_number, uint8_t device) {
+	uint16_t vendor_id = config_space->vendor_id;
 
 	/* Device does not exist */
 	if (vendor_id == 0xFFFF) {
 		return;
 	}
 
-	uint8_t header_type = *(uint8_t *)(base_address + 14);
+	__auto_type header_type = config_space->header_type;
 
-	if (!(header_type & 0x8 /* Multifunction device */)) {
+	if (header_type.multifunction == 0 /* Multifunction device */) {
 		log("Multifunction PCI device at %hX:%hhX:%hhX with vendor id "
 			"0x%hX",
 			segment_group, bus_number, device, vendor_id);
 
 		for (uint8_t function = 0; function < 8; ++function) {
-			void *function_base
-				= (void *)((uint64_t)base_address + (function << 12));
+			union pci_config_space *function_config_space
+				= (void *)((uint64_t)config_space + (function << 12));
 
-			uint16_t vendor_id = *(uint16_t *)(function_base);
+			uint16_t vendor_id = function_config_space->vendor_id;
 
 			/* Function does not exist */
 			if (vendor_id == 0xFFFF) {
 				continue;
 			}
-			register_function(function_base, segment_group, bus_number, device,
-				function);
+			register_function(function_config_space, segment_group, bus_number,
+				device, function);
 		}
-
 	} else {
 		log("Singlefunction PCI device at %hX:%hhX:%hhX with vendor id 0x%hX",
 			segment_group, bus_number, device, vendor_id);
-		register_function(base_address, segment_group, bus_number, device, 0);
+		register_function(config_space, segment_group, bus_number, device, 0);
 	}
 }
 
@@ -91,10 +156,10 @@ static void check_segment_group(void *base_address, uint16_t segment_group,
 	uint8_t pci_bus_start, uint8_t pci_bus_end) {
 	for (uint16_t bus = pci_bus_start; bus <= pci_bus_end; ++bus) {
 		for (uint8_t device = 0; device < 32; ++device) {
-			void *device_base = (void
+			union pci_config_space *config_space = (void
 					*)((uint64_t)base_address
 					   + (((uint8_t)bus - pci_bus_start) << 20 | device << 15));
-			check_device(device_base, segment_group, bus, device);
+			check_device(config_space, segment_group, bus, device);
 		}
 	}
 }
