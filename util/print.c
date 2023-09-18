@@ -66,7 +66,7 @@ static int print_unsigned(uintmax_t val, char format);
 /**
  * @see kprintf()
  */
-int kvprintf(const char *restrict format, va_list arg) {
+int kvprintf(const char *format, va_list arg) {
 	int ret = 0;
 	for (int n = 0; format[n] != '\0'; ++n) {
 		if (format[n] == '\n') {

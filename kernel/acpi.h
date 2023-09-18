@@ -8,4 +8,4 @@
  * @return The ACPI table or nullptr if it could not be found.
  * @see See acpi_tables.h for some possible ACPI tables and their signaturs.
  */
-void *acpi_get_table(char *signature);
+void *acpi_get_table(const char signature[static 4]);

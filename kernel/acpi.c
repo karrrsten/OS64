@@ -9,7 +9,7 @@
 
 #include <stddef.h>
 
-static bool check_table(struct sdt_header *sdt_header) {
+static bool check_table(const struct sdt_header *sdt_header) {
 	uint8_t *ptr = (uint8_t *)sdt_header;
 	uint8_t sum = 0;
 	for (size_t i = 0; i < sdt_header->Length; ++i) {
@@ -21,7 +21,7 @@ static bool check_table(struct sdt_header *sdt_header) {
 	return !sum;
 }
 
-void *acpi_get_table(char *signature) {
+void *acpi_get_table(const char signature[static 4]) {
 	static struct RSDP *rsdp = nullptr;
 	if (!rsdp) {
 		rsdp = limine_rsdp_response->address;

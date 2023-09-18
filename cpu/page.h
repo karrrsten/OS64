@@ -22,7 +22,7 @@
 
 void pg_init(void);
 
-void *get_physical_address(void *virt_addr);
+void *get_physical_address(const void *virt_addr);
 
 void *kmap(void *phys_addr, void *virt_addr, size_t size, uint64_t flags);
 

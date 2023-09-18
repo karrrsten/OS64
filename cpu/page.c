@@ -67,7 +67,7 @@ void pg_init(void) {
  * @param virt_addr The virtual address to look up.
  * @return The correpsonding physical address or nullptr if the address is
  * currently not mapped.*/
-void *get_physical_address(void *virt_addr) {
+void *get_physical_address(const void *virt_addr) {
 	uint64_t virt = (uint64_t)virt_addr;
 	unsigned pml4_index = PML4_INDEX(virt);
 	unsigned pdp_index = PDP_INDEX(virt);
