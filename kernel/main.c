@@ -6,9 +6,9 @@
 #include "cpu/mem.h"
 #include "cpu/page.h"
 #include "cpu/x86.h"
+#include "drivers/nvme.h"
 #include "drivers/pci.h"
 #include "kernel/vmem.h"
-#include "util/log.h"
 #include "util/print.h"
 
 #define HEAP_SIZE (16384)
@@ -28,6 +28,7 @@
 	apic_init();
 
 	pci_init();
+	nvme_init(pci_get_dev(1, 8, 2));
 	sti();
 
 	kprintf("Initializing kernel: Success");
