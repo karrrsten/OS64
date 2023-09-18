@@ -1,6 +1,5 @@
 #pragma once
 
-#include <stdalign.h>
 #include <stdint.h>
 
 void idt_init(void);
@@ -38,6 +37,6 @@ struct [[gnu::packed]] interrupt_frame {
 
 typedef void (*interrupt_handler)(struct interrupt_frame *);
 
-extern volatile alignas(16) __uint128_t idt[256];
+extern volatile __uint128_t idt[256];
 
 void idt_register(uint8_t vector, interrupt_handler handler);

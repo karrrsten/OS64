@@ -45,7 +45,7 @@ static volatile struct tss tss;
 
 static volatile void *isr_stack;
 
-static volatile char alignas(8) gdt[48];
+alignas(8) static volatile char gdt[48];
 
 /**
  * @brief Initialize the GDT with a kernel and a user code segment, a data
