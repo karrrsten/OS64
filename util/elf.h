@@ -109,17 +109,17 @@ typedef struct {
 #define SHT_REL    9 /* Contains “Rel” type relocation entries */
 #define SHT_SHLIB  10 /* Reserved */
 #define SHT_DYNSYM 11 /* Contains a dynamic loader symbol table */
-#define SHT_LOOS   0x60000000 /* Environment-specific use */
-#define SHT_HIOS   0x6FFFFFFF
-#define SHT_LOPROC 0x70000000 /* Processor-specific use */
-#define SHT_HIPROC 0x7FFFFFFF
+#define SHT_LOOS   0x6000'0000 /* Environment-specific use */
+#define SHT_HIOS   0x6FFF'FFFF
+#define SHT_LOPROC 0x7000'0000 /* Processor-specific use */
+#define SHT_HIPROC 0x7FFF'FFFF
 
 /* Section Attributes, sh_flags */
 #define SHF_WRITE     0x1 /* Section contains writable data */
 #define SHF_ALLOC     0x2 /* Section is allocated in memory image of program */
 #define SHF_EXECINSTR 0x4 /* Section contains executable instructions */
-#define SHF_MASKOS    0x0F000000 /* Environment-specific use */
-#define SHF_MASKPROC  0xF0000000 /* Processor-specific use */
+#define SHF_MASKOS    0x0F00'0000 /* Environment-specific use */
+#define SHF_MASKPROC  0xF000'0000 /* Processor-specific use */
 
 /* ELF-64 Symbol Table Entry */
 typedef struct {
@@ -165,8 +165,8 @@ typedef struct {
 } Elf64_Rela;
 
 #define ELF64_R_SYM(i)     ((i) >> 32)
-#define ELF64_R_TYPE(i)    ((i)&0xFFFFFFFFL)
-#define ELF64_R_INFO(s, t) (((s) << 32) + ((t)&0xFFFFFFFFL))
+#define ELF64_R_TYPE(i)    ((i) & 0xFFFF'FFFFL)
+#define ELF64_R_INFO(s, t) (((s) << 32) + ((t) & 0xFFFF'FFFFL))
 
 /* ELF-64 Program Header Table Entry */
 typedef struct {
@@ -188,19 +188,20 @@ typedef struct {
 #define PT_NOTE    4 /* Note sections */
 #define PT_SHLIB   5 /* Reserved */
 #define PT_PHDR    6 /* Program header table */
-#define PT_LOOS    0x60000000 /* Environment-specific use */
-#define PT_HIOS    0x6FFFFFFF
-#define PT_LOPROC  0x70000000 /* Processor-specific use */
-#define PT_HIPROC  0x7FFFFFFF
+#define PT_LOOS    0x6000'0000 /* Environment-specific use */
+#define PT_HIOS    0x6FFF'FFFF
+#define PT_LOPROC  0x7000'0000 /* Processor-specific use */
+#define PT_HIPROC  0x7FFF'FFFF
 
 /* Segment Attributes, p_flags */
 #define PF_X 0x1 /* Execute permission */
 #define PF_W 0x2 /* Write permission */
 #define PF_R 0x4 /* Read permission */
-#define PF_MASKOS \
-	0x00FF0000 /* These flag bits are reserved for environment-specific use */
+#define PF_MASKOS                                                            \
+	0x00FF'0000 /* These flag bits are reserved for environment-specific use \
+	             */
 #define PF_MASKPROC \
-	0xFF000000 /* These flag bits are reserved for processor-specific use */
+	0xFF00'0000 /* These flag bits are reserved for processor-specific use */
 
 /* Dynamic Table Structure */
 typedef struct {
@@ -276,11 +277,11 @@ typedef struct {
 	27 /* d_val, Size, in bytes, of the array of initialization functions. */
 #define DT_FINI_ARRAYSZ \
 	28 /* d_val, Size, in bytes, of the array of termination functions. */
-#define DT_LOOS                                                               \
-	0x60000000 /* Defines a range of dynamic table tags that are reserved for \
+#define DT_LOOS                                                                \
+	0x6000'0000 /* Defines a range of dynamic table tags that are reserved for \
 	              environment-specific use. */
-#define DT_HIOS 0x6FFFFFFF
-#define DT_LOPROC                                                             \
-	0x70000000 /* Defines a range of dynamic table tags that are reserved for \
+#define DT_HIOS 0x6FFF'FFFF
+#define DT_LOPROC                                                              \
+	0x7000'0000 /* Defines a range of dynamic table tags that are reserved for \
 	              processor-specific use. */
-#define DT_HIPROC 0x7FFFFFFF
+#define DT_HIPROC 0x7FFF'FFFF

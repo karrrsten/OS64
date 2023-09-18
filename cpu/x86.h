@@ -70,7 +70,7 @@ static inline void __wrmsr(uint32_t msr, uint32_t low, uint32_t high) {
 }
 
 static inline void wrmsr(uint32_t msr, uint64_t val) {
-	uint32_t low = (uint32_t)(val & 0xFFFFFFFF);
+	uint32_t low = (uint32_t)(val & 0xFFFF'FFFF);
 	uint32_t high = (uint32_t)(val >> 32);
 	__wrmsr(msr, low, high);
 }
