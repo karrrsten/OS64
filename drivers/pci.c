@@ -12,16 +12,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-struct pci_func {
-	union pci_config_space *config_space;
-	void *phys_address; /* Physical address of config space */
-	struct pci_func *next;
-	struct pci_dev *parent;
-	uint8_t function_number;
-	uint8_t class;
-	uint8_t subclass;
-	uint8_t prog_if;
-};
+// TODO: MSI-X
 
 struct pci_dev {
 	struct pci_func *functions;
@@ -45,7 +36,7 @@ struct pci_group {
 
 struct pci_group *pci_tree = nullptr;
 
-static void register_function(union pci_config_space *config_space,
+static void register_function(struct pci_config_space *config_space,
 	uint16_t group_number, uint8_t bus_number, uint8_t device_number,
 	uint8_t function_number) {
 	struct pci_group *group;
@@ -119,7 +110,7 @@ static void register_function(union pci_config_space *config_space,
 	func->prog_if = prog_if;
 }
 
-static void check_device(union pci_config_space *config_space,
+static void check_device(struct pci_config_space *config_space,
 	uint16_t segment_group, uint8_t bus_number, uint8_t device) {
 	uint16_t vendor_id = config_space->vendor_id;
 
@@ -128,7 +119,7 @@ static void check_device(union pci_config_space *config_space,
 		return;
 	}
 
-	__auto_type header_type = config_space->header_type;
+	struct pci_header_type header_type = config_space->header_type;
 
 	if (header_type.multifunction == 0 /* Multifunction device */) {
 		kprintf("Multifunction PCI device at " PRIX16 ":" PRIX8 ":" PRIX8
@@ -137,7 +128,7 @@ static void check_device(union pci_config_space *config_space,
 			segment_group, bus_number, device, vendor_id);
 
 		for (uint8_t function = 0; function < 8; ++function) {
-			union pci_config_space *function_config_space
+			struct pci_config_space *function_config_space
 				= (void *)((uint64_t)config_space + (function << 12));
 
 			uint16_t vendor_id = function_config_space->vendor_id;
@@ -162,7 +153,7 @@ static void check_segment_group(void *base_address, uint16_t segment_group,
 	uint8_t pci_bus_start, uint8_t pci_bus_end) {
 	for (uint16_t bus = pci_bus_start; bus <= pci_bus_end; ++bus) {
 		for (uint8_t device = 0; device < 32; ++device) {
-			union pci_config_space *config_space = (void
+			struct pci_config_space *config_space = (void
 					*)((uint64_t)base_address
 					   + (((uint8_t)bus - pci_bus_start) << 20 | device << 15));
 			check_device(config_space, segment_group, bus, device);
@@ -208,4 +199,27 @@ void pci_init(void) {
 	}
 	kprintf("Enumerating PCI devices: Success");
 }
+
+struct pci_func *pci_get_dev(uint8_t class, uint8_t subclass, uint8_t prog_if) {
+	struct pci_group *group = pci_tree;
+	while (pci_tree) {
+		struct pci_bus *bus = group->busses;
+		while (bus) {
+			struct pci_dev *dev = bus->devices;
+			while (dev) {
+				struct pci_func *func = dev->functions;
+				while (func) {
+					if (func->class == class && func->subclass == subclass
+						&& func->prog_if == prog_if) {
+						return func;
+					}
+					func = func->next;
+				}
+				dev = dev->next;
+			}
+			bus = bus->next;
+		}
+		group = group->next;
+	}
+	return nullptr;
 }
