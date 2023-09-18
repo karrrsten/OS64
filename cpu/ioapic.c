@@ -4,10 +4,7 @@
 #include "cpu/page.h"
 #include "kernel/acpi.h"
 #include "kernel/malloc.h"
-#include "util/log.h"
 
-#include <limits.h>
-#include <stddef.h>
 #include <stdint.h>
 
 static uint64_t ioapic_phys = 0;
@@ -56,7 +53,7 @@ void ioapic_init(void) {
 	uint64_t page_offset = ioapic_phys & 0x1FFF;
 	ioregsel
 		= kmap((void *)(ioapic_phys - page_offset), nullptr, 4096,
-			  PAGE_PRESENT | PAGE_WRITE | PAGE_PCD)
+			  PAGE_PRESENT | PAGE_WRITE | PAGE_PCD | PAGE_GLOBAL)
 	    + page_offset;
 	iowin = (void *)ioregsel + 0x10;
 

@@ -5,10 +5,8 @@
 
 #include "kernel/limine_reqs.h"
 #include "kernel/vmem.h"
-#include "util/log.h"
 #include "util/print.h"
 
-#include <stdalign.h>
 #include <stdint.h>
 
 #define ADDR_MASK_4K (0xF'FFFF'FFFF'F000lu)
@@ -30,7 +28,7 @@ static void early_mmap(void *phys_addr, void *virt_addr, uint64_t flags);
  * @brief Initialize the kernel's page tables.
  */
 void pg_init(void) {
-	log("Initializing paging...");
+	kprintf("Initializing paging...");
 	uint64_t cr3
 		= ((uint64_t)&pml4 - KERNEL_BASE
 			  + limine_kernel_address_response->physical_base)
@@ -53,16 +51,15 @@ void pg_init(void) {
 				  virt_addr = KERNEL_BASE;
 		 virt_addr < (uint64_t)kernel_end;
 		 phys_addr += 4096, virt_addr += 4096) {
-		// TODO: this could actually be mmap
 		early_mmap((void *)phys_addr, (void *)virt_addr,
 			PAGE_PRESENT | PAGE_WRITE | PAGE_GLOBAL);
 	}
 
-	log("Initializing paging: Success");
+	kprintf("Initializing paging: Success");
 
-	log("Loading CR3...");
+	kprintf("Loading CR3...");
 	wcr3(cr3);
-	log("Loading CR3: Success");
+	kprintf("Loading CR3: Success");
 }
 
 /**

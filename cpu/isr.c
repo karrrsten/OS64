@@ -3,9 +3,9 @@
 #include "idt.h"
 #include "x86.h"
 
-#include "util/log.h"
+#include "util/panic.h"
 
-char *exception_strings[] = {"Divide-by-Zero-Error Exception",
+static const char *exception_strings[] = {"Divide-by-Zero-Error Exception",
 	"Debug Exception", "Non-Maskable-Interrupt Exception", "Breakpoint",
 	"Overflow", "Bound-Range", "Invalid-Opcode", "Device-Not-Available",
 	"Double-Fault", "Reserved (9)", "Invalid-TSS", "Segment-Not-Present",
@@ -17,13 +17,14 @@ char *exception_strings[] = {"Divide-by-Zero-Error Exception",
 	"VMM Communication Exception", "Security Exception", "Reserved"};
 
 [[noreturn]] void exception_handler(struct interrupt_frame *frame) {
-	panic("An Error occured: \n Error: %s\n Code: 0x%p",
+	panic("An Error occured: \n Error: %s\n Code: 0x" PRIX64 "",
 		exception_strings[frame->vector], frame->error_code);
 }
 
 [[noreturn]] void page_fault(struct interrupt_frame *frame) {
-	panic("An Error occured:\n Error: Page-Fault Exception\nCode: 0x%p\nPage "
-		  "fault linear address: 0x%p",
+	panic("An Error occured:\n Error: Page-Fault Exception\nCode: 0x" PRIX64
+		  "\nPage "
+		  "fault linear address: 0x" PRIX64 "",
 		frame->error_code, rcr2());
 }
 

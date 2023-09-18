@@ -4,7 +4,7 @@
 #include "limine_reqs.h"
 
 #include "cpu/page.h"
-#include "util/log.h"
+#include "util/panic.h"
 #include "util/string.h"
 
 #include <stddef.h>

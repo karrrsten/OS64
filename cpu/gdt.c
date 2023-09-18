@@ -1,12 +1,10 @@
 #include "gdt.h"
 
-#include "isr.h"
 #include "x86.h"
 
 #include "kernel/limine_reqs.h"
-#include "util/log.h"
+#include "util/print.h"
 
-#include <stdalign.h>
 #include <stdint.h>
 
 #define CS_CONFORMING      ((uint64_t)1 << 42)
@@ -54,7 +52,7 @@ static volatile char alignas(8) gdt[48];
  * segment for both an an entry for a tss.
  */
 void gdt_init(void) {
-	log("Preparing GDT...");
+	kprintf("Preparing GDT...");
 
 	*(uint64_t *)&gdt[GDT_NULL] = 0;
 
@@ -73,16 +71,16 @@ void gdt_init(void) {
 		= SYS_SEG_TSS | SEG_PRESENT | SEG_DPL_3 | SYS_SEG_SPLIT_BASE(tss_phys)
 	    | SYS_SEG_SPLIT_LIMIT(sizeof(tss));
 
-	log("Loading GDT...");
+	kprintf("Loading GDT...");
 	lgdt(sizeof(gdt) - 1, (uint64_t)gdt);
-	log("Loading GDT: Success");
+	kprintf("Loading GDT: Success");
 
-	log("Loading TSS...");
+	kprintf("Loading TSS...");
 	tss.rsp0 = (uint64_t)isr_stack;
 	ltr(GDT_TSS);
-	log("Loading TSS: Success");
+	kprintf("Loading TSS: Success");
 
-	log("Loading segment registers...");
+	kprintf("Loading segment registers...");
 	/* load %ds, %es, %fs, %gs, %ss */
 	asm volatile(
 		"movw $0x10, %%ax\n"
@@ -104,5 +102,5 @@ void gdt_init(void) {
 		:
 		: ret);
 ret:
-	log("Loading segment registers: Success");
+	kprintf("Loading segment registers: Success");
 }

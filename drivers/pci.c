@@ -6,7 +6,8 @@
 #include "kernel/acpi.h"
 #include "kernel/acpi_tables.h"
 #include "kernel/malloc.h"
-#include "util/log.h"
+#include "util/panic.h"
+#include "util/print.h"
 
 #include <stddef.h>
 #include <stdint.h>
@@ -55,8 +56,10 @@ static void register_function(union pci_config_space *config_space,
 	uint8_t class = config_space->class;
 	uint8_t subclass = config_space->subclass;
 	uint8_t prog_if = config_space->prog_if;
-	log("Function %hX:%hhX:%hhX:%hhX of type %hhX:%hhX:%hhX", group_number,
-		bus_number, device_number, function_number, class, subclass, prog_if);
+	kprintf("Function " PRIX16 ":" PRIX8 ":" PRIX8 ":" PRIX8 " of type " PRIX8
+			":" PRIX8 ":" PRIX8 "",
+		group_number, bus_number, device_number, function_number, class,
+		subclass, prog_if);
 
 	for (group = pci_tree; group != nullptr; group = group->next) {
 		if (group->group_number == group_number) {
@@ -128,8 +131,9 @@ static void check_device(union pci_config_space *config_space,
 	__auto_type header_type = config_space->header_type;
 
 	if (header_type.multifunction == 0 /* Multifunction device */) {
-		log("Multifunction PCI device at %hX:%hhX:%hhX with vendor id "
-			"0x%hX",
+		kprintf("Multifunction PCI device at " PRIX16 ":" PRIX8 ":" PRIX8
+				" with vendor id "
+				"0x" PRIX16 "",
 			segment_group, bus_number, device, vendor_id);
 
 		for (uint8_t function = 0; function < 8; ++function) {
@@ -146,7 +150,9 @@ static void check_device(union pci_config_space *config_space,
 				device, function);
 		}
 	} else {
-		log("Singlefunction PCI device at %hX:%hhX:%hhX with vendor id 0x%hX",
+		kprintf("Singlefunction PCI device at " PRIX16 ":" PRIX8 ":" PRIX8
+				" with vendor id "
+				"0x" PRIX16 "",
 			segment_group, bus_number, device, vendor_id);
 		register_function(config_space, segment_group, bus_number, device, 0);
 	}
@@ -165,7 +171,7 @@ static void check_segment_group(void *base_address, uint16_t segment_group,
 }
 
 void pci_init(void) {
-	log("Enumerating PCI devices...");
+	kprintf("Enumerating PCI devices...");
 	struct MCFG *mcfg = acpi_get_table(ACPI_MCFG);
 	if (!mcfg) {
 		panic("Unable to locate ACPI MCFG table!");
@@ -173,7 +179,7 @@ void pci_init(void) {
 
 	size_t num_entries = (mcfg->Length - 44) / 16;
 	if (num_entries == 0) {
-		log("No MCFG entries present.");
+		kprintf("No MCFG entries present.");
 	}
 
 	struct [[gnu::packed]] config_space_entry {
@@ -195,10 +201,11 @@ void pci_init(void) {
 
 		void *base_address = kmap(phys_address, nullptr,
 			(pci_bus_end - pci_bus_start + 1) * 0xF'FFFF /* 1 MiB */,
-			PAGE_PRESENT | PAGE_WRITE | PAGE_PCD);
+			PAGE_PRESENT | PAGE_WRITE | PAGE_PCD | PAGE_GLOBAL);
 
 		check_segment_group(base_address, segment_group, pci_bus_start,
 			pci_bus_end);
 	}
-	log("Enumerating PCI devices: Success");
+	kprintf("Enumerating PCI devices: Success");
+}
 }

@@ -1,7 +1,6 @@
 #include "mem.h"
 
 #include "kernel/limine_reqs.h"
-#include "util/log.h"
 #include "util/print.h"
 #include "util/string.h"
 
@@ -23,7 +22,7 @@ static size_t memmap_size;
  * @brief Initialize the physical memory manager.
  */
 void mem_init(void) {
-	log("Initializing physical memory allocator...");
+	kprintf("Initializing physical memory allocator...");
 	struct limine_memmap_entry **memmap_entries
 		= limine_memmap_response->entries;
 
@@ -33,7 +32,9 @@ void mem_init(void) {
 			mem_max = memmap_entries[i]->base + memmap_entries[i]->length;
 		}
 	}
-	log("Total amount of memory available: %llu =  0x%llX", mem_max, mem_max);
+
+	kprintf("Total amount of memory available: " PRIuMAX " =  0x" PRIXMAX "",
+		mem_max, mem_max);
 	memmap_size = mem_max / 4096 / 8;
 
 	// TODO: this could overrun into used memory
@@ -60,6 +61,13 @@ void mem_init(void) {
 		}
 	}
 
+	/* Mark the first MB as used */
+	for (uint64_t page = 0; page < 0x10'0000; page += 4096) {
+		size_t index = page / 4096 / 8;
+		int bit = page / 4096 % 8;
+		memmap_phys[index] |= 1 << bit;
+	}
+
 	/* mark memmap itself as used */
 	for (uint64_t page
 		 = ((uint64_t)memmap_phys % 4096) != 0
@@ -70,7 +78,7 @@ void mem_init(void) {
 		int bit = page / 4096 % 8;
 		memmap_phys[index] |= 1 << bit;
 	}
-	log("Initializing physical memory allocator: Success");
+	kprintf("Initializing physical memory allocator: Success");
 }
 
 /**
@@ -146,7 +154,7 @@ void *alloc_pages(size_t size) {
  * @brief Mark a single page of physical memory as used.
  * @param page The page to be marked as used.
  */
-void mark_page_used(void *page) {
+void mark_page_used(const void *page) {
 	size_t index = (size_t)page / 4096 / 8;
 	int bit = (size_t)page / 4096 % 8;
 	memmap[index] |= 1 << bit;
@@ -157,7 +165,7 @@ void mark_page_used(void *page) {
  * @param pages The first page to be marked as used.
  * @param size The size of physical memory to be marked as used.
  */
-void mark_pages_used(void *pages, size_t size) {
+void mark_pages_used(const void *pages, size_t size) {
 	size_t index = (size_t)pages / 4096 / 8;
 	size_t start_bit = (size_t)pages / 4096 % 8;
 

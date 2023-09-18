@@ -2,7 +2,8 @@
 
 #include "cpu/mem.h"
 #include "cpu/page.h"
-#include "util/log.h"
+#include "util/panic.h"
+#include "util/print.h"
 #include "util/string.h"
 
 #include <stddef.h>
@@ -24,7 +25,7 @@ static struct heap_header *heap_head; /* Pointer to the first allocated block */
  * @param size The size of the heap.
  */
 void heap_init(void *heap_start, size_t size) {
-	log("Initilizing heap...");
+	kprintf("Initilizing heap...");
 	heap = heap_start;
 	heap_end = heap_start + size;
 
@@ -34,7 +35,8 @@ void heap_init(void *heap_start, size_t size) {
 	void *ptr = (void *)temp;
 
 	for (; ptr <= heap_end; ptr += 4096) {
-		(void)kmap(alloc_page(), ptr, 4096, PAGE_PRESENT | PAGE_WRITE);
+		(void)kmap(alloc_page(), ptr, 4096,
+			PAGE_PRESENT | PAGE_WRITE | PAGE_GLOBAL);
 	}
 	memset(heap, 0, size);
 
@@ -43,7 +45,7 @@ void heap_init(void *heap_start, size_t size) {
 	heap_head->size = 0;
 	heap_head->next = nullptr;
 
-	log("Initializing heap: Success");
+	kprintf("Initializing heap: Success");
 }
 
 void *malloc(size_t size) {

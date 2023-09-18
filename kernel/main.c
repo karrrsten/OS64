@@ -1,7 +1,6 @@
 #include "malloc.h"
 
 #include "cpu/apic.h"
-#include "cpu/apic_timer.h"
 #include "cpu/gdt.h"
 #include "cpu/idt.h"
 #include "cpu/mem.h"
@@ -19,7 +18,7 @@
  */
 [[noreturn]] void kmain(void) {
 	kprint("\x1B[2J"); /* clear the serial console */
-	log("Initializing kernel...");
+	kprintf("Initializing kernel...");
 	gdt_init();
 	idt_init();
 	mem_init();
@@ -31,7 +30,7 @@
 	pci_init();
 	sti();
 
-	log("Initializing kernel: Success");
+	kprintf("Initializing kernel: Success");
 	for (;;)
 		;
 }

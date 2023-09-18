@@ -2,12 +2,11 @@
 
 #include "idt.h"
 #include "ioapic.h"
-#include "mem.h"
 #include "page.h"
 #include "x86.h"
 
 #include "kernel/acpi.h"
-#include "util/log.h"
+#include "util/print.h"
 
 #include <stdint.h>
 
@@ -38,7 +37,7 @@ void apic_spurious_handler(struct interrupt_frame *) {
 }
 
 void apic_init(void) {
-	log("Initializing APIC...");
+	kprintf("Initializing APIC...");
 
 	struct MADT *madt = acpi_get_table(ACPI_MADT);
 
@@ -65,10 +64,10 @@ void apic_init(void) {
 
 	/* Map the APIC into virtual memory */
 	lapic = kmap((void *)lapic_phys_base, nullptr, 4096,
-		PAGE_PRESENT | PAGE_PCD | PAGE_WRITE);
+		PAGE_PRESENT | PAGE_PCD | PAGE_WRITE | PAGE_GLOBAL);
 
 	lapic_id = lapic_read(APIC_ID) << 24;
-	log("Processor Local APIC ID: %hX", lapic_id);
+	kprintf("Processor Local APIC ID: " PRIX8, lapic_id);
 
 	/* Disable all LVT entries */
 	lapic_write(APIC_LVT_CMCI, APIC_LVT_MASK);
@@ -113,5 +112,5 @@ void apic_init(void) {
 	idt_register(0xFF, apic_spurious_handler);
 	lapic_write(APIC_SPURIOUS_INT, APIC_SOFTWARE_ENABLE | 0xFF);
 	wrmsr(IA32_APIC_BASE_MSR, rdmsr(IA32_APIC_BASE_MSR) | APIC_MSR_ENABLE);
-	log("Initializing APIC: Success");
+	kprintf("Initializing APIC: Success");
 }

@@ -4,7 +4,7 @@
 
 #include "cpu/mem.h"
 #include "cpu/page.h"
-#include "util/log.h"
+#include "util/print.h"
 
 #include <stddef.h>
 
@@ -23,7 +23,7 @@ static void *vheap_end;
  * @brief Initialize the heap of virtual memory/pages.
  */
 void vmem_init(void) {
-	log("Initializing virtual heap...");
+	kprintf("Initializing virtual heap...");
 
 	vheap_start
 		= (void *)HIGHER_HALF_BASE + mem_max
@@ -37,7 +37,7 @@ void vmem_init(void) {
 	vheap_head->addr = (void *)vheap_start;
 	vheap_head->size = 0;
 	vheap_head->next = nullptr;
-	log("Initializing virtual heap: Success");
+	kprintf("Initializing virtual heap: Success");
 }
 
 /**
