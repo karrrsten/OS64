@@ -11,6 +11,16 @@ void *memcpy(void *restrict s1, const void *restrict s2, size_t n) {
 	return s1;
 }
 
+volatile void *memcpy_volatile(volatile void *restrict s1,
+	const volatile void *restrict s2, size_t n) {
+	volatile char *restrict str1 = (volatile char *restrict)s1;
+	const volatile char *restrict str2 = (const volatile char *restrict)s2;
+	for (size_t i = 0; i < n; ++i) {
+		str1[i] = str2[i];
+	}
+	return s1;
+}
+
 void *memmove(void *s1, const void *s2, size_t n) {
 	char *str1 = (char *)s1;
 	const char *str2 = (const char *)s2;
@@ -108,4 +118,12 @@ volatile void *memset_volatile(volatile void *s, int c, size_t n) {
 		str[i] = (unsigned char)c;
 	}
 	return s;
+}
+
+size_t strlen(const char *s) {
+	size_t len = 0;
+	while (*s != '\0') {
+		++len;
+	}
+	return len;
 }
