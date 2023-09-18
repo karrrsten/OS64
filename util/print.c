@@ -41,13 +41,19 @@ void kprint(const char *str) {
  * a/A format specifier; wide strings (length modifier l + format specifier c or
  * s) are not allowed.
  */
-int kprintf(const char *restrict format, ...) {
+int kprintf(const char *format, ...) {
 	va_list arg;
 	va_start(arg);
 	int ret = kvprintf(format, arg);
 	va_end(arg);
 	return ret;
 }
+
+#define FLAG_MINUS (1 << 0)
+#define FLAG_PLUS  (1 << 1)
+#define FLAG_SPACE (1 << 2)
+#define FLAG_HASH  (1 << 3)
+#define FLAG_ZERO  (1 << 4)
 
 enum LENGTH_MODIFIER {
 	NONE,
@@ -81,12 +87,12 @@ int kvprintf(const char *format, va_list arg) {
 		} else if (format[n + 1] == '%') {
 			serial_putchar('%');
 			++ret;
-			++n;
+			n += 2;
 			continue;
 		}
+		++n; /* format[n] is a format specifier (%...) */
 
-		++n; /* advance to the optional length modifier or format specifier */
-		[[maybe_unused]] int length_modifier = NONE;
+		int length_modifier = NONE;
 		switch (format[n]) {
 		case 'h':
 			if (format[n + 1] == 'h') {
@@ -185,6 +191,7 @@ int kvprintf(const char *format, va_list arg) {
 		default: return -1;
 		}
 	}
+	serial_putchar('\n');
 	return ret;
 }
 
