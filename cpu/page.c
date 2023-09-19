@@ -84,8 +84,7 @@ void *get_physical_address(const void *virt_addr) {
 		return nullptr;
 	} else if (pdp[pdp_index] & PAGE_SIZE) {
 		/* Also account for the offset into the page */
-		return (
-			void *)((pdp[pdp_index] & ADDR_MASK_1G) + (virt & ~ADDR_MASK_1G));
+		return (void *)((pdp[pdp_index] & ADDR_MASK_1G) + (virt & 0x1FFF'FFFF));
 	}
 
 	uint64_t *pd = P2V((uint64_t *)(pdp[pdp_index] & ADDR_MASK_4K));
@@ -93,12 +92,12 @@ void *get_physical_address(const void *virt_addr) {
 		return nullptr;
 	} else if (pd[pd_index] & PAGE_SIZE) {
 		/* Also account for the offset into the page */
-		return (void *)((pd[pd_index] & ADDR_MASK_2M) + (virt & ~ADDR_MASK_2M));
+		return (void *)((pd[pd_index] & ADDR_MASK_2M) + (virt & 0xF'FFFF));
 	}
 
 	uint64_t *pt = P2V((uint64_t *)(pd[pd_index] & ADDR_MASK_4K));
 	/* Also account for the offset into the page */
-	return (void *)(pt[pt_index] & ADDR_MASK_4K) + (virt & ~ADDR_MASK_4K);
+	return (void *)(pt[pt_index] & ADDR_MASK_4K) + (virt & 0xFFF);
 }
 
 static void early_mmap(void *phys_addr, void *virt_addr, uint64_t flags) {
