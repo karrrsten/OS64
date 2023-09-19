@@ -4,14 +4,8 @@
 
 extern uint8_t lapic_id;
 
-/**
- * @brief Initialize the Processor Local APIC and IOAPIC(s).
- */
 void apic_init(void);
 
-/**
- * @brief Send an EOI to the Local APIC.
- */
 void apic_eoi(void);
 
 /**

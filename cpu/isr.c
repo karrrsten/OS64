@@ -28,6 +28,9 @@ static const char *exception_strings[] = {"Divide-by-Zero-Error Exception",
 		frame->error_code, rcr2());
 }
 
+/**
+ * @brief Initialize the exception handlers.
+ */
 void isr_init(void) {
 	for (int i = 0; i < 32; ++i) {
 		if (i == 14) {

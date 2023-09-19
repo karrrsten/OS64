@@ -38,10 +38,16 @@ void apic_set_timer(uint32_t time, interrupt_handler handler, enum mode mode) {
 	lapic_write(APIC_TIMER_INIT, count);
 }
 
+/**
+ * @brief Mask and disable the APIC timer.
+ */
 void apic_mask_timer(void) {
 	lapic_write(APIC_LVT_TIMER, lapic_read(APIC_LVT_TIMER) | APIC_LVT_MASK);
 }
 
+/**
+ * @brief Unmask and enable the APIC timer.
+ */
 void apic_unmask_timer(void) {
 	lapic_write(APIC_LVT_TIMER, lapic_read(APIC_LVT_TIMER) & ~APIC_LVT_MASK);
 }

@@ -18,16 +18,29 @@
 uint8_t lapic_id;
 static volatile uint32_t *lapic;
 
+/**
+ * @brief Write to a register of the local APIC.
+ * @param reg The register to write to.
+ * @param val The value to write.
+ */
 void lapic_write(enum apic_reg reg, uint32_t val) {
 	/* reg is an absolut offset, lapic is a pointer to 4-byte values */
 	*(lapic + reg / 4) = val;
 }
 
+/**
+ * @brief Read a register of the local APIC.
+ * @param reg The register to read.
+ * @return The value read from the register.
+ */
 uint32_t lapic_read(enum apic_reg reg) {
 	/* reg is an absolut offset, lapic is a pointer to 4-byte values */
 	return *(lapic + reg / 4);
 }
 
+/**
+ * @brief Send an EOI to the Local APIC.
+ */
 void apic_eoi(void) {
 	lapic_write(APIC_EOI, 0);
 }
@@ -35,6 +48,10 @@ void apic_eoi(void) {
 void apic_spurious_handler(struct interrupt_frame *) {
 	return;
 }
+
+/**
+ * @brief Initialize the Processor Local APIC and IOAPIC(s).
+ */
 
 void apic_init(void) {
 	kprintf("Initializing APIC...");

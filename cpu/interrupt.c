@@ -268,6 +268,9 @@ extern void isr255(void);
 
 #define GATE_TYPE_INT (0xE00'0000'0000)
 
+/**
+ * @brief Register the interrupt handler stubs in the IDT.
+ */
 void idt_register_stubs(void) {
 	idt[0] = GATE_SPLIT_OFFSET(isr0) | GATE_DESCR(GDT_KERNEL_CS) | SEG_PRESENT
 	       | SEG_DPL_0 | GATE_TYPE_INT;
