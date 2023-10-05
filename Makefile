@@ -15,7 +15,7 @@ CFLAGS += -I$(CURDIR) -nostdlib -static
 QEMU_FLAGS += -m 512M -machine q35 -cpu max -no-shutdown -no-reboot
 QEMU_FLAGS += -d int -M smm=off -trace events=trace_events.cfg -D qemu.log
 QEMU_FLAGS += -parallel none -serial stdio -vga none
-QEMU_FLAGS += -bios /usr/share/ovmf/OVMF.fd
+QEMU_FLAGS += -bios /usr/share/ovmf/x64/OVMF.fd
 QEMU_FLAGS += -drive file=$(IMG),if=none,format=raw,id=nvm -device nvme,serial=deadbeef,drive=nvm
 #QEMU_FLAGS += -drive file=$(IMG),media=disk,format=raw
 
@@ -39,12 +39,6 @@ debug: all
 	gdb -q -symbols=$(KERNEL) -ex "target remote localhost:1234"
 	-killall $(QEMU)
 
-# run the kernel and provide a gdb stub to connect to
-.PHONY: debug-server
-debug-server: all
-	-killall $(QEMU)
-	$(QEMU) $(QEMU_FLAGS) -s -S
-
 
 compile_commands.json: $(CC_CMD_JSON)
 	sed -e '1s/^/[\n/' -e '$$s/,$$/\n]/' $(CC_CMD_JSON) > compile_commands.json
@@ -67,7 +61,7 @@ $(IMG): build limine.cfg $(KERNEL)
 	sudo mkdir -p $(IMG_MOUNT)/EFI/BOOT
 	sudo cp $(KERNEL) $(IMG_MOUNT)
 	sudo cp limine.cfg $(IMG_MOUNT)/limine
-	sudo cp /usr/local/share/limine/BOOTX64.EFI $(IMG_MOUNT)/EFI/BOOT
+	sudo cp /usr/share/limine/BOOTX64.EFI $(IMG_MOUNT)/EFI/BOOT
 
 	sync
 	sudo umount $(IMG_MOUNT)
