@@ -33,7 +33,6 @@ void pg_init(void) {
 		= ((uint64_t)&pml4 - KERNEL_BASE
 			  + limine_kernel_address_response->physical_base)
 	    & ADDR_MASK_4K;
-
 	uint64_t *pdp_entry_zero = early_alloc_page();
 
 	pml4[PML4_INDEX(HIGHER_HALF_BASE)]
@@ -73,7 +72,6 @@ void *get_physical_address(const void *virt_addr) {
 	unsigned pdp_index = PDP_INDEX(virt);
 	unsigned pd_index = PD_INDEX(virt);
 	unsigned pt_index = PT_INDEX(virt);
-
 
 	if (!pml4[pml4_index]) {
 		return nullptr;
