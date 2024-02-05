@@ -64,6 +64,10 @@ enum LENGTH_MODIFIER {
 	INTMAX_T,
 	SIZE_T,
 	PTRDIFF_T,
+	W8,
+	W16,
+	W32,
+	W64
 };
 
 static int print_signed(intmax_t val);
@@ -124,6 +128,27 @@ int kvprintf(const char *format, va_list arg) {
 			length_modifier = PTRDIFF_T;
 			++n;
 			break;
+		case 'w':
+			++n;
+			switch (format[n]) {
+			case '8' /* 8 */:
+				length_modifier = W8;
+				++n;
+				break;
+			case '1' /* 16 */:
+				length_modifier = W16;
+				n += 2;
+				break;
+			case '3' /* 32 */:
+				length_modifier = W32;
+				n += 2;
+				break;
+			case '6' /* 64 */:
+				length_modifier = W64;
+				n += 2;
+				break;
+			}
+			break;
 		default: length_modifier = NONE; break;
 		}
 
@@ -133,7 +158,8 @@ int kvprintf(const char *format, va_list arg) {
 		case 'i':
 			intmax_t val;
 			switch (length_modifier) {
-				/* note: char and short undergo integer */
+				/* note: char/uint8_t and short/uint16_t undergo integer
+				 * promotion on a function call, thus they are passed as ints */
 			case CHAR: val = (intmax_t)va_arg(arg, int); break;
 			case SHORT: val = (intmax_t)va_arg(arg, int); break;
 			case LONG: val = (intmax_t)va_arg(arg, long); break;
@@ -141,6 +167,10 @@ int kvprintf(const char *format, va_list arg) {
 			case INTMAX_T: val = (intmax_t)va_arg(arg, intmax_t); break;
 			case SIZE_T: val = (intmax_t)va_arg(arg, size_t); break;
 			case PTRDIFF_T: val = (intmax_t)va_arg(arg, ptrdiff_t); break;
+			case W8: val = (intmax_t)va_arg(arg, int); break;
+			case W16: val = (intmax_t)va_arg(arg, int); break;
+			case W32: val = (intmax_t)va_arg(arg, int32_t); break;
+			case W64: val = (intmax_t)va_arg(arg, int64_t); break;
 			case NONE: val = (intmax_t)va_arg(arg, int); break;
 			}
 			ret += print_signed(val);
@@ -152,8 +182,8 @@ int kvprintf(const char *format, va_list arg) {
 		case 'X': /* unsigned int, upper case hex*/
 			uintmax_t uval;
 			switch (length_modifier) {
-				/* note: char and short undergo integer promotion on a function
-				 * call, thus they are passed as ints */
+				/* note: char/uint8_t and short/uint16_t undergo integer
+				 * promotion on a function call, thus they are passed as ints */
 			case CHAR: uval = (uintmax_t)va_arg(arg, unsigned int); break;
 			case SHORT: uval = (uintmax_t)va_arg(arg, unsigned int); break;
 			case LONG: uval = (uintmax_t)va_arg(arg, unsigned long); break;
@@ -163,6 +193,10 @@ int kvprintf(const char *format, va_list arg) {
 			case INTMAX_T: uval = (uintmax_t)va_arg(arg, uintmax_t); break;
 			case SIZE_T: uval = (uintmax_t)va_arg(arg, size_t); break;
 			case PTRDIFF_T: uval = (uintmax_t)va_arg(arg, ptrdiff_t); break;
+			case W8: uval = (uintmax_t)va_arg(arg, unsigned int); break;
+			case W16: uval = (uintmax_t)va_arg(arg, unsigned int); break;
+			case W32: uval = (uintmax_t)va_arg(arg, uint32_t); break;
+			case W64: uval = (uintmax_t)va_arg(arg, uint64_t); break;
 			case NONE: uval = (uintmax_t)va_arg(arg, unsigned int); break;
 			}
 			ret += print_unsigned(uval, format[n]);

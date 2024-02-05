@@ -82,20 +82,13 @@ static void nvme_send_command(struct nvme_sq *queue,
 	*queue->cq->cq_doorbell = queue->cq->cq_head;
 
 	if (cq_entry->Status != 0) {
-		panic(
-			"NVMe Command failed:\n\tCDW0: OPC: 0x" PRIX8 ", FUSE: 0b" PRIb8
-			", PSDT: "
-			"0b" PRIb8 ", CID: 0x" PRIX16 "\n\tNSID: 0x" PRIX32
-			"\n\tCDW2: 0x" PRIX32 "\n\tCW3: "
-			"0x" PRIX32 "\n\tMPTR: 0x" PRIX64 "\n\tDPTR: 0x" PRIX64 PRIX64
-			"\n\tCDW10: "
-			"0x" PRIX32 "\n\tCDW11: 0x" PRIX32 "\n\tCDW12: 0x" PRIX32
-			"\n\tCDW13: 0x" PRIX32 "\n\tCDW14: "
-			"0x" PRIX32 "\n\tCDW15: 0x" PRIX32
-			"\n\nCompletion Queue Entry:\n\tDW0: "
-			"0x" PRIX32 "\n\tDW1: 0x" PRIX32 "\n\tSQHD: 0x" PRIX32
-			"\n\tSQID: 0x" PRIX32 "\n\tCID: "
-			"0x" PRIX32 "\n\tStatus: 0b" PRIb32 "\n\t",
+		panic("NVMe Command failed:\n\tCDW0: OPC: 0x%w8X, FUSE: 0b%w8b, PSDT: "
+		      "0b%w8b, CID: 0x%w16X\n\tNSID: 0x%w32X\n\tCDW2: 0x%w32X\n\tCW3: "
+		      "0x%w32X\n\tMPTR: 0x%w64X\n\tDPTR: 0x%w64X %w64X\n\tCDW10: "
+		      "0x%w32X\n\tCDW11: 0x%w32X\n\tCDW12: 0x%w32X\n\tCDW13: "
+		      "0x%w32X\n\tCDW14: 0x%w32X\n\tCDW15: 0x%w32X\n\nCompletion Queue "
+		      "Entry:\n\tDW0: 0x%w32X\n\tDW1: 0x%w32X\n\tSQHD: "
+		      "0x%w32X\n\tSQID: 0x%w32X\n\tCID: 0x%w32X\n\tStatus: 0b%w32b\n\t",
 			cmd->CDW0.OPC, cmd->CDW0.FUSE, cmd->CDW0.PSDT, cmd->CDW0.CID,
 			cmd->NSID, cmd->CDW2, cmd->CDW3, cmd->MPTR,
 			(uint64_t)(cmd->DPTR >> 64), (uint64_t)(cmd->DPTR & UINT64_MAX),

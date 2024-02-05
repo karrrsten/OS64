@@ -47,8 +47,7 @@ static void register_function(struct pci_config_space *config_space,
 	uint8_t class = config_space->class;
 	uint8_t subclass = config_space->subclass;
 	uint8_t prog_if = config_space->prog_if;
-	kprintf("Function " PRIX16 ":" PRIX8 ":" PRIX8 ":" PRIX8 " of type " PRIX8
-			":" PRIX8 ":" PRIX8 "",
+	kprintf("Function %w16X:%w8X:%w8X:%w8X of type %w8X:%w8X:%w8X",
 		group_number, bus_number, device_number, function_number, class,
 		subclass, prog_if);
 
@@ -122,9 +121,8 @@ static void check_device(struct pci_config_space *config_space,
 	struct pci_header_type header_type = config_space->header_type;
 
 	if (header_type.multifunction == 0 /* Multifunction device */) {
-		kprintf("Multifunction PCI device at " PRIX16 ":" PRIX8 ":" PRIX8
-				" with vendor id "
-				"0x" PRIX16 "",
+		kprintf("Multifunction PCI device at %w16X:%w8X:%w8X with vendor id "
+				"0x%w16X",
 			segment_group, bus_number, device, vendor_id);
 
 		for (uint8_t function = 0; function < 8; ++function) {
@@ -141,9 +139,8 @@ static void check_device(struct pci_config_space *config_space,
 				device, function);
 		}
 	} else {
-		kprintf("Singlefunction PCI device at " PRIX16 ":" PRIX8 ":" PRIX8
-				" with vendor id "
-				"0x" PRIX16 "",
+		kprintf("Singlefunction PCI device at %w16X:%w8X:%w8X with vendor id "
+		        "0x%w16X",
 			segment_group, bus_number, device, vendor_id);
 		register_function(config_space, segment_group, bus_number, device, 0);
 	}

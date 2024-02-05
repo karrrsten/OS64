@@ -84,7 +84,7 @@ void apic_init(void) {
 		PAGE_PRESENT | PAGE_PCD | PAGE_WRITE | PAGE_GLOBAL);
 
 	lapic_id = lapic_read(APIC_ID) << 24;
-	kprintf("Processor Local APIC ID: " PRIX8, lapic_id);
+	kprintf("Processor Local APIC ID: %w8X", lapic_id);
 
 	/* Disable all LVT entries */
 	lapic_write(APIC_LVT_CMCI, APIC_LVT_MASK);

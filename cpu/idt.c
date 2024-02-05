@@ -36,9 +36,8 @@ void interrupt_stub(struct interrupt_frame *frame) {
 	if (handlers[frame->vector] != 0) {
 		handlers[frame->vector](frame);
 	} else {
-		kprintf("An interrupt (vector 0x" PRIX64
-				") was received, but no handler was "
-				"registered. Ignoring the interrupt.",
+		kprintf("An interrupt (vector 0x%w64X) was received, but no handler "
+		        "was registered. Ignoring the interrupt.",
 			frame->vector);
 	}
 }

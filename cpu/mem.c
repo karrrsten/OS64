@@ -33,7 +33,7 @@ void mem_init(void) {
 		}
 	}
 
-	kprintf("Total amount of memory available: " PRIuMAX " =  0x" PRIXMAX "",
+	kprintf("Total amount of memory available: %zu = 0x%zX",
 		mem_max, mem_max);
 	memmap_size = mem_max / 4096 / 8;
 
