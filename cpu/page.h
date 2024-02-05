@@ -20,10 +20,16 @@
 #define PAGE_GLOBAL  (1 << 8)
 #define PAGE_NX      (1 << 63)
 
+extern volatile uint64_t *pg_pml4;
+
 void pg_init(void);
 
 void *get_physical_address(const void *virt_addr);
+void set_pml4(volatile uint64_t *pml4);
 
 void *kmap(void *phys_addr, void *virt_addr, size_t size, uint64_t flags);
 
 void kunmap(void *virt_addr, size_t size);
+
+volatile uint64_t *alloc_pml4(void);
+void free_pml4(volatile uint64_t *pml4);

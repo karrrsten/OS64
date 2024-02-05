@@ -7,9 +7,7 @@
 
 #include <stdint.h>
 
-#define CS_CONFORMING      ((uint64_t)1 << 42)
-#define CS_LONG_MODE       ((uint64_t)1 << 53)
-#define CS_DEFAULT_OP_SIZE ((uint64_t)1 << 54)
+#define CS_LONG_MODE ((uint64_t)1 << 53)
 
 #define DS_WRITABLE ((uint64_t)1 << 41)
 
@@ -45,7 +43,7 @@ static volatile struct tss tss;
 
 static volatile void *isr_stack;
 
-alignas(8) static volatile char gdt[48];
+alignas(8) static volatile char gdt[56];
 
 /**
  * @brief Initialize the GDT with a kernel and a user code segment, a data
@@ -59,10 +57,14 @@ void gdt_init(void) {
 	*(uint64_t *)&gdt[GDT_KERNEL_CS]
 		= SEG_CODE | SEG_PRESENT | SEG_DPL_0 | CS_LONG_MODE;
 
-	*(uint64_t *)&gdt[GDT_ANY_DS] = SEG_DATA | SEG_PRESENT | DS_WRITABLE;
+	*(uint64_t *)&gdt[GDT_KERNEL_DS]
+		= SEG_DATA | SEG_PRESENT | SEG_DPL_0 | DS_WRITABLE;
 
 	*(uint64_t *)&gdt[GDT_USER_CS]
 		= SEG_CODE | SEG_PRESENT | SEG_DPL_3 | CS_LONG_MODE;
+
+	*(uint64_t *)&gdt[GDT_USER_DS]
+		= SEG_DATA | SEG_PRESENT | SEG_DPL_3 | DS_WRITABLE;
 
 	uint64_t tss_phys
 		= (uint64_t)&tss - limine_kernel_address_response->virtual_base

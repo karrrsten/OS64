@@ -7,9 +7,10 @@
 
 #define GDT_NULL      (0x0)
 #define GDT_KERNEL_CS (0x8)
-#define GDT_ANY_DS    (0x10)
+#define GDT_KERNEL_DS (0x10)
 #define GDT_USER_CS   (0x18)
-#define GDT_TSS       (0x20)
+#define GDT_USER_DS   (0x20)
+#define GDT_TSS       (0x28)
 
 #define SEG_DPL_0   ((uint64_t)0 << 45)
 #define SEG_DPL_3   ((uint64_t)3 << 45)

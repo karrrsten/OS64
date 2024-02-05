@@ -4,7 +4,8 @@ common:
 	push %rbx
 	push %rcx
 	push %rdx
-	/* rsp and rbp are already in the interrupt frame */
+	push %rbp
+	/* rsp and ss are already in the interrupt frame */
 	push %rsi
 	push %rdi
 	push %r8
@@ -30,6 +31,7 @@ common:
 	pop %r8
 	pop %rdi
 	pop %rsi
+	pop %rbp
 	pop %rdx
 	pop %rcx
 	pop %rbx

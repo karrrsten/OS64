@@ -2,6 +2,29 @@
 
 #include <stdint.h>
 
+struct [[gnu::packed]] regs {
+	uint64_t r15;
+	uint64_t r14;
+	uint64_t r13;
+	uint64_t r12;
+	uint64_t r11;
+	uint64_t r10;
+	uint64_t r9;
+	uint64_t r8;
+	uint64_t rdi;
+	uint64_t rsi;
+	uint64_t rbp;
+	uint64_t rdx;
+	uint64_t rcx;
+	uint64_t rbx;
+	uint64_t rax;
+	uint64_t rip;
+	uint64_t cs;
+	uint64_t rsp;
+};
+
+#define RFLAGS_IF (1 << 9)
+
 static inline void cli() {
 	asm volatile("cli");
 }
@@ -88,7 +111,7 @@ static inline uint64_t rdmsr(uint32_t msr) {
 	return ((uint64_t)high << 32) | low;
 }
 
-static inline uint64_t rcr2() {
+static inline uint64_t rcr2(void) {
 	uint64_t cr2;
 	asm volatile("movq %%cr2, %0"
 				 : "=r"(cr2));
@@ -100,6 +123,13 @@ static inline void wcr3(uint64_t value) {
 		"movq %0, %%cr3"
 		:
 		: "r"(value));
+}
+
+static inline uint64_t rcr3(void) {
+	uint64_t cr3;
+	asm volatile("movq %%cr3, %0"
+				 : "=r"(cr3));
+	return cr3;
 }
 
 static inline void invlpg(volatile void *addr) {

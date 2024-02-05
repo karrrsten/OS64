@@ -45,7 +45,7 @@ void apic_eoi(void) {
 	lapic_write(APIC_EOI, 0);
 }
 
-void apic_spurious_handler(struct interrupt_frame *) {
+static void apic_spurious_handler(struct interrupt_frame *) {
 	return;
 }
 

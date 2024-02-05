@@ -6,6 +6,7 @@
  * @var kernel_end End of the kernel in virtual memory
  */
 extern void *kernel_end;
+
 /**
  * @var mem_max The size of physical memory
  */
