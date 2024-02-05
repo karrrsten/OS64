@@ -6,7 +6,7 @@ CC_CMD_JSON = $(OBJ:%.o=%.json)
 CC = clang
 QEMU = qemu-system-x86_64
 
-CFLAGS += -g -O0 -std=gnu2x -ffreestanding
+CFLAGS += -ggdb -g3 -O0 -std=gnu2x -ffreestanding
 CFLAGS += -fms-extensions  -fwrapv -fno-strict-aliasing #-fstrict-volatile-bitfields
 CFLAGS += -target x86_64-elf -mgeneral-regs-only -mno-red-zone -mcmodel=large
 CFLAGS += -Wall -Wextra -Werror -Wno-microsoft-anon-tag -Wno-address-of-packed-member -Wno-unused-function
@@ -52,11 +52,11 @@ $(IMG): build limine.cfg $(KERNEL)
 
 	$(eval LOOP_DEV=$(shell sudo losetup -f))
 	sudo losetup $(LOOP_DEV) $(IMG)
-	sudo partprobe $(LOOP_DEV)
+	sudo partx $(LOOP_DEV)
 
-	sudo mkfs.fat -F 32 $(LOOP_DEV)p1
+	sudo mkfs.fat -F 32 $(LOOP_DEV)
 
-	sudo mount $(LOOP_DEV)p1 $(IMG_MOUNT)
+	sudo mount $(LOOP_DEV) $(IMG_MOUNT)
 	sudo mkdir -p $(IMG_MOUNT)/limine
 	sudo mkdir -p $(IMG_MOUNT)/EFI/BOOT
 	sudo cp $(KERNEL) $(IMG_MOUNT)
