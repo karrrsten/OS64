@@ -13,6 +13,9 @@
  * @param c The char to output.
  */
 static inline void serial_putchar(char c) {
+	if (c == '\n') {
+		outb(COM1, '\r');
+	}
 	outb(COM1, c);
 }
 
@@ -80,9 +83,8 @@ int kvprintf(const char *format, va_list arg) {
 	int ret = 0;
 	for (int n = 0; format[n] != '\0'; ++n) {
 		if (format[n] == '\n') {
-			serial_putchar('\r');
 			serial_putchar('\n');
-			++ret; /* serial specific \r\n, for C it's still only \n */
+			++ret;
 			continue;
 		} else if (format[n] != '%') {
 			serial_putchar(format[n]);

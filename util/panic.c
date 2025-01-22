@@ -13,13 +13,13 @@
  * @see kprintf()
  */
 [[noreturn]] void panic(const char *format, ...) {
-	kprint("[PANIC!]: ");
+	kprint("\n\n[PANIC!]: ");
 	va_list arg;
 	va_start(arg);
 	kvprintf(format, arg);
-	kprintf("Halting...");
 	va_end(arg);
+	kprintf("Halting...");
 	for (;;) {
 		hlt();
-	};
+	}
 }

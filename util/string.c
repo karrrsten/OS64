@@ -29,8 +29,8 @@ void *memmove(void *s1, const void *s2, size_t n) {
 			str1[i] = str2[i];
 		}
 	} else {
-		for (size_t i = n - 1; i >= 0; --i) {
-			str1[i] = str2[i];
+		for (size_t i = n; i > 0; --i) {
+			str1[i-1] = str2[i-1];
 		}
 	}
 	return s1;
