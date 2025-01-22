@@ -6,8 +6,23 @@
 
 #include "util/print.h"
 
+#include <stdint.h>
+
 alignas(16) volatile __uint128_t idt[256];
 static interrupt_handler handlers[265];
+
+static uint32_t irq_disable_count = 0;
+
+void irq_enable(void) {
+	if (!--irq_disable_count) {
+		sti();
+	}
+}
+
+void irq_disable(void) {
+	cli();
+	++irq_disable_count;
+}
 
 /**
  * @brief Allocate a vector in the idt.
@@ -37,7 +52,7 @@ void interrupt_stub(struct interrupt_frame *frame) {
 		handlers[frame->vector](frame);
 	} else {
 		kprintf("An interrupt (vector 0x%w64X) was received, but no handler "
-		        "was registered. Ignoring the interrupt.",
+				"was registered. Ignoring the interrupt.",
 			frame->vector);
 	}
 }

@@ -6,6 +6,9 @@ void idt_init(void);
 
 int idt_alloc_vector(void);
 
+void irq_enable(void);
+void irq_disable(void);
+
 /**
  * @struct interrupt_frame
  * @brief The interrupt frame provided by the interrupt stub to the registered
