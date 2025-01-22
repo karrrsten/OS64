@@ -1,4 +1,6 @@
 #include "malloc.h"
+#include "proc.h"
+#include "vmem.h"
 
 #include "cpu/apic.h"
 #include "cpu/gdt.h"
@@ -8,22 +10,24 @@
 #include "cpu/x86.h"
 #include "drivers/nvme.h"
 #include "drivers/pci.h"
-#include "kernel/vmem.h"
+#include "kernel/limine_reqs.h"
 #include "util/print.h"
 
-#define HEAP_SIZE (16384)
+#include <cpuid.h>
+#include <limine.h>
 
 /**
  * @brief The main kernel function.
  */
 [[noreturn]] void kmain(void) {
-	kprint("\x1B[2J"); /* clear the serial console */
+	serial_init();
 	kprintf("Initializing kernel...");
+
 	gdt_init();
 	idt_init();
 	mem_init();
 	pg_init();
-	heap_init(kernel_end, HEAP_SIZE);
+	heap_init(kernel_end + (~(uint64_t)kernel_end & 0xFFF) + 1, 0x4000);
 	vmem_init();
 	apic_init();
 

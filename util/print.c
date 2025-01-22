@@ -9,6 +9,17 @@
 #define COM1 (0x3F8)
 
 /**
+ * @brief Initialize the serial console.
+ */
+void serial_init(void) {
+	outb(COM1 + 2, 0);
+	outb(COM1 + 3, 0b11);
+	outb(COM1 + 4, 0);
+
+	kprint("\x1B[2J");
+}
+
+/**
  * @brief Output a single char to the serial console (i.e. COM1).
  * @param c The char to output.
  */
@@ -162,18 +173,18 @@ int kvprintf(const char *format, va_list arg) {
 			switch (length_modifier) {
 				/* note: char/uint8_t and short/uint16_t undergo integer
 				 * promotion on a function call, thus they are passed as ints */
-			case CHAR: val = (intmax_t)va_arg(arg, int); break;
-			case SHORT: val = (intmax_t)va_arg(arg, int); break;
-			case LONG: val = (intmax_t)va_arg(arg, long); break;
+			case CHAR:      val = (intmax_t)va_arg(arg, int); break;
+			case SHORT:     val = (intmax_t)va_arg(arg, int); break;
+			case LONG:      val = (intmax_t)va_arg(arg, long); break;
 			case LONG_LONG: val = (intmax_t)va_arg(arg, long long); break;
-			case INTMAX_T: val = (intmax_t)va_arg(arg, intmax_t); break;
-			case SIZE_T: val = (intmax_t)va_arg(arg, size_t); break;
+			case INTMAX_T:  val = (intmax_t)va_arg(arg, intmax_t); break;
+			case SIZE_T:    val = (intmax_t)va_arg(arg, size_t); break;
 			case PTRDIFF_T: val = (intmax_t)va_arg(arg, ptrdiff_t); break;
-			case W8: val = (intmax_t)va_arg(arg, int); break;
-			case W16: val = (intmax_t)va_arg(arg, int); break;
-			case W32: val = (intmax_t)va_arg(arg, int32_t); break;
-			case W64: val = (intmax_t)va_arg(arg, int64_t); break;
-			case NONE: val = (intmax_t)va_arg(arg, int); break;
+			case W8:        val = (intmax_t)va_arg(arg, int); break;
+			case W16:       val = (intmax_t)va_arg(arg, int); break;
+			case W32:       val = (intmax_t)va_arg(arg, int32_t); break;
+			case W64:       val = (intmax_t)va_arg(arg, int64_t); break;
+			case NONE:      val = (intmax_t)va_arg(arg, int); break;
 			}
 			ret += print_signed(val);
 			break;
@@ -186,20 +197,20 @@ int kvprintf(const char *format, va_list arg) {
 			switch (length_modifier) {
 				/* note: char/uint8_t and short/uint16_t undergo integer
 				 * promotion on a function call, thus they are passed as ints */
-			case CHAR: uval = (uintmax_t)va_arg(arg, unsigned int); break;
+			case CHAR:  uval = (uintmax_t)va_arg(arg, unsigned int); break;
 			case SHORT: uval = (uintmax_t)va_arg(arg, unsigned int); break;
-			case LONG: uval = (uintmax_t)va_arg(arg, unsigned long); break;
+			case LONG:  uval = (uintmax_t)va_arg(arg, unsigned long); break;
 			case LONG_LONG:
 				uval = (uintmax_t)va_arg(arg, unsigned long long);
 				break;
-			case INTMAX_T: uval = (uintmax_t)va_arg(arg, uintmax_t); break;
-			case SIZE_T: uval = (uintmax_t)va_arg(arg, size_t); break;
+			case INTMAX_T:  uval = (uintmax_t)va_arg(arg, uintmax_t); break;
+			case SIZE_T:    uval = (uintmax_t)va_arg(arg, size_t); break;
 			case PTRDIFF_T: uval = (uintmax_t)va_arg(arg, ptrdiff_t); break;
-			case W8: uval = (uintmax_t)va_arg(arg, unsigned int); break;
-			case W16: uval = (uintmax_t)va_arg(arg, unsigned int); break;
-			case W32: uval = (uintmax_t)va_arg(arg, uint32_t); break;
-			case W64: uval = (uintmax_t)va_arg(arg, uint64_t); break;
-			case NONE: uval = (uintmax_t)va_arg(arg, unsigned int); break;
+			case W8:        uval = (uintmax_t)va_arg(arg, unsigned int); break;
+			case W16:       uval = (uintmax_t)va_arg(arg, unsigned int); break;
+			case W32:       uval = (uintmax_t)va_arg(arg, uint32_t); break;
+			case W64:       uval = (uintmax_t)va_arg(arg, uint64_t); break;
+			case NONE:      uval = (uintmax_t)va_arg(arg, unsigned int); break;
 			}
 			ret += print_unsigned(uval, format[n]);
 			break;

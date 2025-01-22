@@ -4,6 +4,8 @@
 
 #define dump_struct(s) __builtin_dump_struct(s, kprintf)
 
+void serial_init(void);
+
 void kputchar(char c);
 void kprint(const char *str);
 

@@ -39,8 +39,7 @@ static inline void sti() {
 
 static inline uint8_t inb(uint16_t port) {
 	uint8_t result;
-	asm volatile(
-		"inb %%dx, %%al"
+	asm volatile("inb %%dx, %%al"
 		: "=a"(result)
 		: "d"(port));
 	return result;
@@ -48,8 +47,7 @@ static inline uint8_t inb(uint16_t port) {
 
 static inline uint16_t inw(uint16_t port) {
 	uint16_t result;
-	asm volatile(
-		"inw %%dx, %%ax"
+	asm volatile("inw %%dx, %%ax"
 		: "=a"(result)
 		: "d"(port));
 	return result;
@@ -57,40 +55,41 @@ static inline uint16_t inw(uint16_t port) {
 
 static inline uint32_t inl(uint16_t port) {
 	uint32_t result;
-	asm volatile(
-		"inl %%dx, %%eax"
+	asm volatile("inl %%dx, %%eax"
 		: "=a"(result)
 		: "d"(port));
 	return result;
 }
 
 static inline void outb(uint16_t port, uint8_t data) {
-	asm volatile(
-		"outb %%al, %%dx"
+	asm volatile("outb %%al, %%dx"
 		:
 		: "a"(data), "d"(port));
 }
 
 static inline void outw(uint16_t port, uint16_t data) {
-	asm volatile(
-		"outw %%ax, %%dx"
+	asm volatile("outw %%ax, %%dx"
 		:
 		: "a"(data), "d"(port));
 }
 
 static inline void outl(uint16_t port, uint32_t data) {
-	asm volatile(
-		"outl %%eax, %%dx"
+	asm volatile("outl %%eax, %%dx"
 		:
 		: "a"(data), "d"(port));
 }
 
 static inline void __wrmsr(uint32_t msr, uint32_t low, uint32_t high) {
-	asm volatile(
-		"wrmsr"
+	asm volatile("wrmsr"
 		:
 		: "c"(msr), "a"(low), "d"(high));
 }
+
+#define MSR_IA32_EFER (0xC000'0080)
+#define IA32_EFER_NXE (1LL << 11)
+#define IA32_EFER_LMA (1LL << 10)
+#define IA32_EFER_LME (1LL << 8)
+#define IA32_EFER_SCE (1LL << 0)
 
 static inline void wrmsr(uint32_t msr, uint64_t val) {
 	uint32_t low = (uint32_t)(val & 0xFFFF'FFFF);
@@ -99,8 +98,7 @@ static inline void wrmsr(uint32_t msr, uint64_t val) {
 }
 
 static inline void __rdmsr(uint32_t msr, uint32_t *low, uint32_t *high) {
-	asm volatile(
-		"rdmsr"
+	asm volatile("rdmsr"
 		: "=a"(*low), "=d"(*high)
 		: "c"(msr));
 }
@@ -111,16 +109,37 @@ static inline uint64_t rdmsr(uint32_t msr) {
 	return ((uint64_t)high << 32) | low;
 }
 
+#define CR0_PG (1LL << 31)
+#define CR0_WP (1LL << 16)
+#define CR0_NE (1LL << 5)
+#define CR0_ET (1LL << 4)
+#define CR0_PE (1LL << 0)
+
+static inline void wcr0(uint64_t value) {
+	asm volatile("movq %0, %%cr0"
+		:
+		: "r"(value));
+}
+
+static inline uint64_t rcr0(void) {
+	uint64_t cr0;
+	asm volatile("movq %%cr0, %0"
+		: "=r"(cr0));
+	return cr0;
+}
+
 static inline uint64_t rcr2(void) {
 	uint64_t cr2;
 	asm volatile("movq %%cr2, %0"
-				 : "=r"(cr2));
+		: "=r"(cr2));
 	return cr2;
 }
 
+#define CR4_PGE (1LL << 7)
+#define CR4_PAE (1LL << 5)
+
 static inline void wcr3(uint64_t value) {
-	asm volatile(
-		"movq %0, %%cr3"
+	asm volatile("movq %0, %%cr3"
 		:
 		: "r"(value));
 }
@@ -128,20 +147,31 @@ static inline void wcr3(uint64_t value) {
 static inline uint64_t rcr3(void) {
 	uint64_t cr3;
 	asm volatile("movq %%cr3, %0"
-				 : "=r"(cr3));
+		: "=r"(cr3));
 	return cr3;
 }
 
+static inline void wcr4(uint64_t value) {
+	asm volatile("movq %0, %%cr4"
+		:
+		: "r"(value));
+}
+
+static inline uint64_t rcr4(void) {
+	uint64_t cr4;
+	asm volatile("movq %%cr4, %0"
+		: "=r"(cr4));
+	return cr4;
+}
+
 static inline void invlpg(volatile void *addr) {
-	asm volatile(
-		"invlpg (%0)"
+	asm volatile("invlpg (%0)"
 		:
 		: "r"((uint64_t)addr));
 }
 
 static inline void ltr(uint16_t selector) {
-	asm volatile(
-		"ltr %0"
+	asm volatile("ltr %0"
 		:
 		: "r"(selector));
 }
@@ -156,8 +186,7 @@ static inline void lgdt(uint16_t size, uint64_t offset) {
 	gdt_descr.size = size;
 	gdt_descr.offset = offset;
 
-	asm volatile(
-		"lgdt (%0)"
+	asm volatile("lgdt (%0)"
 		:
 		: "r"(&gdt_descr));
 }
@@ -172,8 +201,7 @@ static inline void lidt(uint16_t size, uint64_t offset) {
 	idt_descr.size = size;
 	idt_descr.offset = offset;
 
-	asm volatile(
-		"lidt (%0)"
+	asm volatile("lidt (%0)"
 		:
 		: "r"(&idt_descr));
 }
