@@ -24,7 +24,7 @@
 alignas(PAGE_TABLE_ALIGN) static volatile uint64_t pml4_kernel[512];
 volatile uint64_t *pg_pml4 = pml4_kernel;
 
-static void early_mmap(void *phys_addr, void *virt_addr, uint64_t flags);
+static void map_single_page(uint64_t phys, uint64_t virt, uint64_t flags);
 
 /**
  * @brief Initialize the kernel's page tables.
@@ -35,36 +35,42 @@ void pg_init(void) {
 		= ((uint64_t)&pml4_kernel - KERNEL_BASE
 			  + limine_kernel_address_response->physical_base)
 	    & ADDR_MASK_4K;
-	uint64_t *pdp_entry_zero = early_alloc_page();
 
-	pml4_kernel[PML4_INDEX(HIGHER_HALF_BASE)]
-		= ((uint64_t)pdp_entry_zero & ADDR_MASK_4K) | PAGE_PRESENT | PAGE_WRITE;
+	/* Prepare kernel pdp entries in the pml4 that are always mapped */
+	for (int i = PML4_INDEX(HIGHER_HALF_BASE); i < 512; ++i) {
+		void *pdp = alloc_page();
+		memset_volatile(P2V(pdp), 0, 4096);
+
+		pml4_kernel[i] = (uint64_t)pdp | PAGE_PRESENT | PAGE_WRITE;
+	}
 
 	/* Map all of memory into the higher half (max 512 GB) */
+	uint64_t *pdp_entry = P2V(
+		(uint64_t *)(pml4_kernel[PML4_INDEX(HIGHER_HALF_BASE)] & ADDR_MASK_4K));
 	for (size_t i = 0; i <= mem_max / 0x4000'0000 /* 1GB */ && i < 512; ++i) {
-		pdp_entry_zero[i]
-			= (i * 0x4000'0000 & ADDR_MASK_1G) | PAGE_SIZE | PAGE_PRESENT
-		    | PAGE_WRITE | PAGE_GLOBAL;
+		// Does not work in simics
+		/* pdp_entry[i]
+			= i * 0x4000'0000 | PAGE_SIZE | PAGE_PRESENT | PAGE_WRITE
+		    | PAGE_GLOBAL; */
+
+		uint64_t *pt_entry = alloc_page();
+		pdp_entry[i]
+		    = (uint64_t)pt_entry | PAGE_PRESENT | PAGE_WRITE | PAGE_GLOBAL;
+
+		for (size_t j = 0; j < 512; ++j) {
+		    P2V(pt_entry)
+		    [j] = j * 0x20'0000 + i * 0x4000'0000 | PAGE_SIZE | PAGE_PRESENT
+		        | PAGE_WRITE | PAGE_GLOBAL;
+		}
 	}
 
 	/* Map the kernel into the upper 2GB */
 	for (uint64_t phys_addr = limine_kernel_address_response->physical_base,
-				  virt_addr = KERNEL_BASE;
-		 virt_addr < (uint64_t)kernel_end;
-		 phys_addr += 4096, virt_addr += 4096) {
-		early_mmap((void *)phys_addr, (void *)virt_addr,
+				  virt_addr = limine_kernel_address_response->virtual_base;
+		virt_addr < (uint64_t)kernel_end;
+		phys_addr += 4096, virt_addr += 4096) {
+		map_single_page(phys_addr, virt_addr,
 			PAGE_PRESENT | PAGE_WRITE | PAGE_GLOBAL);
-	}
-
-	/* Prepare kernel pdp entries in the pml4 that are always mapped */
-	for (int i = PML4_INDEX(HIGHER_HALF_BASE); i < 512; ++i) {
-		if (!pml4_kernel[i]) {
-			void *pdp = early_alloc_page();
-			memset_volatile(pdp, 0, 4096);
-
-			pml4_kernel[i]
-				= ((uint64_t)pdp & ADDR_MASK_4K) | PAGE_PRESENT | PAGE_GLOBAL;
-		}
 	}
 
 	kprintf("Initializing paging: Success");
@@ -114,39 +120,6 @@ void *get_physical_address(const void *virt_addr) {
 void set_pml4(volatile uint64_t *pml4) {
 	pg_pml4 = pml4;
 	wcr3((uint64_t)get_physical_address((void *)pml4));
-}
-
-static void early_mmap(void *phys_addr, void *virt_addr, uint64_t flags) {
-	uint64_t phys = (uint64_t)phys_addr;
-	uint64_t virt = (uint64_t)virt_addr;
-	unsigned pml4_index = PML4_INDEX(virt);
-	unsigned pdp_index = PDP_INDEX(virt);
-	unsigned pd_index = PD_INDEX(virt);
-	unsigned pt_index = PT_INDEX(virt);
-
-	if (!pml4_kernel[pml4_index]) {
-		pml4_kernel[pml4_index]
-			= ((uint64_t)early_alloc_page() & ADDR_MASK_4K) | flags;
-	} else {
-		pml4_kernel[pml4_index] |= flags;
-	}
-
-	uint64_t *pdp = (uint64_t *)(pml4_kernel[pml4_index] & ADDR_MASK_4K);
-	if (!pdp[pdp_index]) {
-		pdp[pdp_index] = ((uint64_t)early_alloc_page() & ADDR_MASK_4K) | flags;
-	} else {
-		pdp[pdp_index] |= flags;
-	}
-
-	uint64_t *pd = (uint64_t *)(pdp[pdp_index] & ADDR_MASK_4K);
-	if (!pd[pd_index]) {
-		pd[pd_index] = ((uint64_t)early_alloc_page() & ADDR_MASK_4K) | flags;
-	} else {
-		pd[pd_index] |= flags;
-	}
-
-	uint64_t *pt = (uint64_t *)(pd[pd_index] & ADDR_MASK_4K);
-	pt[pt_index] = ((uint64_t)phys & ADDR_MASK_4K) | flags;
 }
 
 static void map_single_page(uint64_t phys, uint64_t virt, uint64_t flags) {

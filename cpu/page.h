@@ -6,9 +6,9 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#define KERNEL_BASE      (limine_kernel_address_response->virtual_base)
 #define HIGHER_HALF_BASE (limine_hhdm_response->offset)
-/* All of physical memory is mapped at the higher half base */
+#define KERNEL_BASE      (limine_kernel_address_response->virtual_base)
+
 #define P2V(addr) ((typeof(addr))((uint64_t)addr + HIGHER_HALF_BASE))
 
 #define PAGE_PRESENT (1 << 0)

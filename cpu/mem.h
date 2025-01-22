@@ -14,8 +14,6 @@ extern size_t mem_max;
 
 void mem_init(void);
 
-void *early_alloc_page(void);
-
 void *alloc_page(void);
 void *alloc_pages(size_t size);
 

@@ -1,6 +1,9 @@
 #include "mem.h"
 
+#include "page.h"
+
 #include "kernel/limine_reqs.h"
+#include "util/panic.h"
 #include "util/print.h"
 #include "util/string.h"
 
@@ -10,21 +13,21 @@
 #include <stdint.h>
 
 extern void _kernel_end; /* End of the kernel, defined in linker.ld */
-void *kernel_end; /* End of the kernel, including memmap */
+void *kernel_end = &_kernel_end;
 
 size_t mem_max;
 
 static uint8_t *memmap; /* Map of all of physical memory */
-static uint8_t *memmap_phys; /* Physical address of memmap */
 static size_t memmap_size;
+
+// TODO: reclaim bootloader reclaimable at the end of kmain
 
 /**
  * @brief Initialize the physical memory manager.
  */
 void mem_init(void) {
 	kprintf("Initializing physical memory allocator...");
-	struct limine_memmap_entry **memmap_entries
-		= limine_memmap_response->entries;
+	struct limine_memmap_entry **memmap_entries = limine_memmap_response->entries;
 
 	/* find the highest useable physical address to save space in memmap */
 	for (size_t i = 0; i < limine_memmap_response->entry_count; ++i) {
@@ -33,20 +36,24 @@ void mem_init(void) {
 		}
 	}
 
-	kprintf("Total amount of memory available: %zu = 0x%zX",
-		mem_max, mem_max);
+	kprintf("Total amount of memory available: %zu = 0x%zX", mem_max, mem_max);
 	memmap_size = mem_max / 4096 / 8;
 
-	// TODO: this could overrun into used memory
-	memmap = &_kernel_end;
-	kernel_end = (void *)memmap + memmap_size;
+	for (size_t i = 0; i < limine_memmap_response->entry_count; ++i) {
+		if (memmap_entries[i]->type == LIMINE_MEMMAP_USABLE) {
+			if (memmap_entries[i]->length >= memmap_size) {
+				memmap = (uint8_t *)P2V(memmap_entries[i]->base);
+				break;
+			}
+		}
+	}
 
-	memmap_phys
-		= memmap - limine_kernel_address_response->virtual_base
-	    + limine_kernel_address_response->physical_base;
+	if (!memmap) {
+		panic("Failed to find a memory region large enough (memmap).");
+	}
 
 	/* mark all pages as used */
-	memset(memmap_phys, INT_MAX, memmap_size);
+	memset(memmap, INT_MAX, memmap_size);
 
 	/* mark available pages as unused */
 	for (size_t i = 0; i < limine_memmap_response->entry_count; ++i) {
@@ -56,7 +63,7 @@ void mem_init(void) {
 				 page += 4096) {
 				size_t index = page / 4096 / 8;
 				int bit = page / 4096 % 8;
-				memmap_phys[index] &= ~(1 << bit);
+				memmap[index] &= ~(1 << bit);
 			}
 		}
 	}
@@ -65,43 +72,18 @@ void mem_init(void) {
 	for (uint64_t page = 0; page < 0x10'0000; page += 4096) {
 		size_t index = page / 4096 / 8;
 		int bit = page / 4096 % 8;
-		memmap_phys[index] |= 1 << bit;
+		memmap[index] |= 1 << bit;
 	}
 
 	/* mark memmap itself as used */
-	for (uint64_t page
-		 = ((uint64_t)memmap_phys % 4096) != 0
-	         ? (uint64_t)memmap_phys - (uint64_t)memmap_phys % 4096
-	         : (uint64_t)memmap_phys;
-		 page < (uint64_t)memmap_phys + memmap_size; page += 4096) {
+	for (uint64_t page = (uint64_t)memmap - HIGHER_HALF_BASE;
+		 page < (uint64_t)memmap - HIGHER_HALF_BASE + memmap_size;
+		 page += 4096) {
 		size_t index = page / 4096 / 8;
 		int bit = page / 4096 % 8;
-		memmap_phys[index] |= 1 << bit;
+		memmap[index] |= 1 << bit;
 	}
 	kprintf("Initializing physical memory allocator: Success");
-}
-
-/**
- * @brief Allocate a single page of physical memory. To be used before pg_init()
- * was called.
- * @return The address of a free page in memory.
- */
-void *early_alloc_page(void) {
-	for (size_t index = 0; index < mem_max; ++index) {
-		if (~memmap_phys[index]) {
-			for (int bit = 0; bit < 1; ++bit) {
-				if (~memmap_phys[index] & 1 << bit) {
-					void *page = (void *)(index * 4096 * 8 + bit * 4096);
-					size_t index = (size_t)page / 4096 / 8;
-					int bit = (size_t)page / 4096 % 8;
-					memmap_phys[index] |= 1 << bit;
-					return page;
-				}
-			}
-		}
-	}
-
-	return nullptr;
 }
 
 /**
@@ -109,8 +91,8 @@ void *early_alloc_page(void) {
  * @return The address of a free page in memory.
  */
 void *alloc_page(void) {
-	for (size_t index = 0; index < mem_max; ++index) {
-		if (~memmap[index]) {
+	for (size_t index = 0; index < memmap_size; ++index) {
+		if (~memmap[index] & 0xFF) {
 			for (int bit = 0; bit < 8; ++bit) {
 				if (~memmap[index] & (1 << bit)) {
 					void *page = (void *)(index * 4096 * 8 + bit * 4096);
