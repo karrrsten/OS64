@@ -22,7 +22,7 @@ SECTIONS
 
 	.bss ALIGN(4K) :
 	{
-		*(.bss .bss.*)
+		*(.bss .bss.* .lbss)
 		*(COMMON)
 	}
 

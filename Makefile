@@ -6,16 +6,16 @@ CC_CMD_JSON = $(OBJ:%.o=%.json)
 CC = clang
 QEMU = qemu-system-x86_64
 
-CFLAGS += -ggdb -g3 -O0 -std=gnu2x -ffreestanding
-CFLAGS += -fms-extensions  -fwrapv -fno-strict-aliasing #-fstrict-volatile-bitfields
-CFLAGS += -target x86_64-elf -mgeneral-regs-only -mno-red-zone -mcmodel=large
+CFLAGS += -ggdb -g3 -O0 -std=gnu23 -ffreestanding
+CFLAGS += -fms-extensions -fwrapv -fno-strict-aliasing #-fstrict-volatile-bitfields
+CFLAGS += -target x86_64-elf -mgeneral-regs-only -mno-red-zone -mcmodel=large -fno-stack-protector
 CFLAGS += -Wall -Wextra -Werror -Wno-microsoft-anon-tag -Wno-address-of-packed-member -Wno-unused-function
 CFLAGS += -I$(CURDIR) -nostdlib -static
 
 QEMU_FLAGS += -m 512M -machine q35 -cpu max -no-shutdown -no-reboot
 QEMU_FLAGS += -d int -M smm=off -trace events=trace_events.cfg -D qemu.log
 QEMU_FLAGS += -parallel none -serial stdio -vga none
-QEMU_FLAGS += -bios /usr/share/ovmf/x64/OVMF.fd
+QEMU_FLAGS += -bios /usr/share/ovmf/x64/OVMF.4m.fd
 QEMU_FLAGS += -drive file=$(IMG),if=none,format=raw,id=nvm -device nvme,serial=deadbeef,drive=nvm
 #QEMU_FLAGS += -drive file=$(IMG),media=disk,format=raw
 

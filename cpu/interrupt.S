@@ -1,11 +1,13 @@
 .extern interrupt_stub
 common:
+	//TODO: load ss if cpl changes (is set to NULL otherwise)
+	/* Note: if the order is modified, idt.h needs to be modified accordingly */
+	/* stack: ss, rsp, rflags, cs, rip, error_code, vector */
 	push %rax
 	push %rbx
 	push %rcx
 	push %rdx
 	push %rbp
-	/* rsp and ss are already in the interrupt frame */
 	push %rsi
 	push %rdi
 	push %r8
@@ -54,7 +56,7 @@ common:
 		pushq %rax
 		movq $\vector, (%rsp)
 		jmp common
-.endmacro
+.endm
 
 isr vector=0, dummy_error_code=true
 isr vector=1, dummy_error_code=true
