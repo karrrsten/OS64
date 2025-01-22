@@ -36,7 +36,7 @@ run: all
 debug: all
 	-killall $(QEMU)
 	$(QEMU) $(QEMU_FLAGS) -s -S &
-	gdb -q -symbols=$(KERNEL) -ex "target remote localhost:1234"
+	gdb -q
 	-killall $(QEMU)
 
 
