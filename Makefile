@@ -43,7 +43,7 @@ debug: all
 compile_commands.json: $(CC_CMD_JSON)
 	sed -e '1s/^/[\n/' -e '$$s/,$$/\n]/' $(CC_CMD_JSON) > compile_commands.json
 
-$(IMG): build limine.cfg $(KERNEL)
+$(IMG): build limine.conf $(KERNEL)
 	qemu-img create $(IMG) 1G
 
 	parted -s $(IMG) mklabel gpt
@@ -60,7 +60,7 @@ $(IMG): build limine.cfg $(KERNEL)
 	sudo mkdir -p $(IMG_MOUNT)/limine
 	sudo mkdir -p $(IMG_MOUNT)/EFI/BOOT
 	sudo cp $(KERNEL) $(IMG_MOUNT)
-	sudo cp limine.cfg $(IMG_MOUNT)/limine
+	sudo cp limine.conf $(IMG_MOUNT)/limine
 	sudo cp /usr/share/limine/BOOTX64.EFI $(IMG_MOUNT)/EFI/BOOT
 
 	sync
