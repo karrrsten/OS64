@@ -27,7 +27,7 @@ static struct heap_header *heap_head; /* Pointer to the first allocated block */
 void heap_init(void *heap_start, size_t size) {
 	kprintf("Initilizing heap...");
 
-	if ((uint64_t) heap_start & 4096) {
+	if ((uint64_t) heap_start & 0xFFF) {
 		panic("heap_start = %w64X is not page aligned");
 	}
 

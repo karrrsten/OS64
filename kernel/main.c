@@ -32,7 +32,7 @@
 	idt_init();
 	mem_init();
 	pg_init();
-	heap_init(kernel_end + (~(uint64_t)kernel_end & 0xFFF) + 1, 0x4000);
+	heap_init(kernel_end, 0x4000);
 	vmem_init();
 	apic_init();
 
