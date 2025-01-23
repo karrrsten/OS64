@@ -30,7 +30,7 @@ void *memmove(void *s1, const void *s2, size_t n) {
 		}
 	} else {
 		for (size_t i = n; i > 0; --i) {
-			str1[i-1] = str2[i-1];
+			str1[i - 1] = str2[i - 1];
 		}
 	}
 	return s1;
@@ -100,7 +100,9 @@ int strncmp(const char *s1, const char *s2, size_t n) {
 		}
 	}
 
-	--i;
+	if (i) {
+		--i;
+	}
 	return s1[i] - s2[i];
 }
 
