@@ -16,7 +16,7 @@ QEMU_FLAGS += -m 512M -machine q35 -cpu max -no-shutdown -no-reboot
 QEMU_FLAGS += -d int -M smm=off -trace events=trace_events.cfg -D qemu.log
 QEMU_FLAGS += -parallel none -serial stdio -vga none
 QEMU_FLAGS += -bios /usr/share/ovmf/x64/OVMF.4m.fd
-QEMU_FLAGS += -drive file=$(IMG),if=none,format=raw,id=nvm -device nvme,serial=deadbeef,drive=nvm
+QEMU_FLAGS += -device nvme,serial=deadbeef,drive=nvm -drive file=$(IMG),if=none,format=raw,id=nvm
 #QEMU_FLAGS += -drive file=$(IMG),media=disk,format=raw
 
 IMG = build/os.img
@@ -56,14 +56,13 @@ $(IMG): build limine.conf $(KERNEL)
 
 	sudo mkfs.fat -F 32 $(LOOP_DEV)
 
-	sudo mount $(LOOP_DEV) $(IMG_MOUNT)
-	sudo mkdir -p $(IMG_MOUNT)/limine
-	sudo mkdir -p $(IMG_MOUNT)/EFI/BOOT
-	sudo cp $(KERNEL) $(IMG_MOUNT)
-	sudo cp limine.conf $(IMG_MOUNT)/limine
-	sudo cp /usr/share/limine/BOOTX64.EFI $(IMG_MOUNT)/EFI/BOOT
+	sudo mount -o uid=$(shell id -u) $(LOOP_DEV) $(IMG_MOUNT)
+	mkdir -p $(IMG_MOUNT)/limine
+	mkdir -p $(IMG_MOUNT)/EFI/BOOT
+	cp $(KERNEL) $(IMG_MOUNT)
+	cp limine.conf $(IMG_MOUNT)/limine
+	cp /usr/share/limine/BOOTX64.EFI $(IMG_MOUNT)/EFI/BOOT
 
-	sync
 	sudo umount $(IMG_MOUNT)
 	sudo losetup -d $(LOOP_DEV)
 
