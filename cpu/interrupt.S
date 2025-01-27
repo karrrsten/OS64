@@ -46,7 +46,7 @@ common:
 #define true 1
 #define false 0
 
-.macro isr vector,  dummy_error_code /* do we need to push an error code? */
+.macro isr vector, dummy_error_code /* do we need to push an error code? */
 	.global isr\vector
 	isr\vector:
 	.if \dummy_error_code

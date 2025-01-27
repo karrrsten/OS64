@@ -2,6 +2,7 @@
 
 #include "gdt.h"
 #include "idt.h"
+
 #include <stdint.h>
 
 extern void isr0(void);
@@ -261,9 +262,10 @@ extern void isr253(void);
 extern void isr254(void);
 extern void isr255(void);
 
-#define GATE_SPLIT_OFFSET(handler)   \
-	(((__uint128_t)(uint64_t)handler & 0xFFFF) \
-		| (((__uint128_t)(uint64_t)handler & 0xFFFF'FFFF'FFFF'0000) >> 16) << 48)
+#define GATE_SPLIT_OFFSET(handler)                                         \
+	(((__uint128_t)(uint64_t)handler & 0xFFFF)                             \
+		| (((__uint128_t)(uint64_t)handler & 0xFFFF'FFFF'FFFF'0000) >> 16) \
+			  << 48)
 #define GATE_DESCR(descr) ((__uint128_t)descr << 16)
 #define GATE_TYPE(type)   ((__uint128_t)type << 40)
 

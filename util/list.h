@@ -37,8 +37,8 @@ struct list_head {
  * @param member The name of the list_head within the struct.
  * @param head A pointer to the head of the list.
  */
-#define list_next_circular(entry, member, head)             \
-	((entry)->member.next == head                           \
+#define list_next_circular(entry, member, head)                \
+	((entry)->member.next == head                              \
 			? list_entry((head)->next, typeof(*entry), member) \
 			: list_next(entry, member))
 
@@ -46,8 +46,7 @@ struct list_head {
  * @def LIST_HEAD_INIT(name)
  * @brief Statically initialize a list head.
  */
-#define LIST_HEAD_INIT(name) \
-	{ &(name), &(name) }
+#define LIST_HEAD_INIT(name) {&(name), &(name)}
 
 /**
  * @brief Initialize a list head.

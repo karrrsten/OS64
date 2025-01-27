@@ -1,6 +1,5 @@
 #include "acpi.h"
 
-#include "acpi_tables.h"
 #include "limine_reqs.h"
 
 #include "cpu/page.h"

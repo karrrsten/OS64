@@ -70,8 +70,7 @@ static void nvme_send_command(struct nvme_sq *queue,
 	*queue->sq_doorbell = queue->sq_tail;
 
 	/* Wait until a new Completion Queue Entry is available */
-	while (cq_entry->P == cq_p_flag)
-		;
+	while (cq_entry->P == cq_p_flag);
 
 	/* Increment the Completion Queue Head Pointer Doorbell */
 	if (queue->cq->cq_head >= drive.admin_q.sq_size) {
@@ -82,13 +81,14 @@ static void nvme_send_command(struct nvme_sq *queue,
 	*queue->cq->cq_doorbell = queue->cq->cq_head;
 
 	if (cq_entry->Status != 0) {
-		panic("NVMe Command failed:\n\tCDW0: OPC: 0x%w8X, FUSE: 0b%w8b, PSDT: "
-		      "0b%w8b, CID: 0x%w16X\n\tNSID: 0x%w32X\n\tCDW2: 0x%w32X\n\tCW3: "
-		      "0x%w32X\n\tMPTR: 0x%w64X\n\tDPTR: 0x%w64X %w64X\n\tCDW10: "
-		      "0x%w32X\n\tCDW11: 0x%w32X\n\tCDW12: 0x%w32X\n\tCDW13: "
-		      "0x%w32X\n\tCDW14: 0x%w32X\n\tCDW15: 0x%w32X\n\nCompletion Queue "
-		      "Entry:\n\tDW0: 0x%w32X\n\tDW1: 0x%w32X\n\tSQHD: "
-		      "0x%w32X\n\tSQID: 0x%w32X\n\tCID: 0x%w32X\n\tStatus: 0b%w32b\n\t",
+		panic(
+			"NVMe Command failed:\n\tCDW0: OPC: 0x%w8X, FUSE: 0b%w8b, PSDT: "
+			"0b%w8b, CID: 0x%w16X\n\tNSID: 0x%w32X\n\tCDW2: 0x%w32X\n\tCW3: "
+			"0x%w32X\n\tMPTR: 0x%w64X\n\tDPTR: 0x%w64X %w64X\n\tCDW10: "
+			"0x%w32X\n\tCDW11: 0x%w32X\n\tCDW12: 0x%w32X\n\tCDW13: "
+			"0x%w32X\n\tCDW14: 0x%w32X\n\tCDW15: 0x%w32X\n\nCompletion Queue "
+			"Entry:\n\tDW0: 0x%w32X\n\tDW1: 0x%w32X\n\tSQHD: "
+			"0x%w32X\n\tSQID: 0x%w32X\n\tCID: 0x%w32X\n\tStatus: 0b%w32b\n\t",
 			cmd->CDW0.OPC, cmd->CDW0.FUSE, cmd->CDW0.PSDT, cmd->CDW0.CID,
 			cmd->NSID, cmd->CDW2, cmd->CDW3, cmd->MPTR,
 			(uint64_t)(cmd->DPTR >> 64), (uint64_t)(cmd->DPTR & UINT64_MAX),
@@ -133,8 +133,7 @@ void nvme_init(struct pci_func *pci_func) {
 	// TODO: access to NVMe regs with a 2-byte read, undefined behavior,
 	// -fstrict-volatile-bitfields would help if it was supported by clang
 	/* Wait for drive ready */
-	while (drive.regs->CSTS.RDY != 0)
-		;
+	while (drive.regs->CSTS.RDY != 0);
 
 	/* Configure the Admin Queue */
 	drive.regs->AQA.ACQS = AQA_ACQS;
@@ -165,8 +164,7 @@ void nvme_init(struct pci_func *pci_func) {
 	drive.regs->CC.EN = 1;
 
 	/* Wait for drive ready */
-	while (drive.regs->CSTS.RDY != 1)
-		;
+	while (drive.regs->CSTS.RDY != 1);
 
 	/* Identify (Identify Controller Data Structure) */
 	void *identify_command_buffer = kmap(alloc_page(), nullptr, 4096,

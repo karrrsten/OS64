@@ -39,7 +39,7 @@ void ioapic_init(void) {
 	char *madt_entry = madt->Interrupt_Controller_Structure;
 
 	for (; (void *)madt_entry < (void *)madt + madt->Length;
-		 madt_entry += *(madt_entry + 1)) {
+		madt_entry += *(madt_entry + 1)) {
 		if (madt_entry[0] == 1 /* I/O APIC */
 			&& *(uint32_t *)(madt_entry + 8) == 0 /* GSI Base */) {
 			ioapic_phys = *(uint32_t *)(madt_entry + 4);
@@ -68,7 +68,7 @@ void ioapic_init(void) {
 
 	madt_entry = madt->Interrupt_Controller_Structure;
 	for (; (void *)madt_entry < (void *)madt + madt->Length;
-		 madt_entry += *(madt_entry + 1)) {
+		madt_entry += *(madt_entry + 1)) {
 		if (madt_entry[0] == 2 /* Interrupt Source Overrride */) {
 			uint8_t n = madt_entry[3];
 			isa_to_gsi[n] = *(uint32_t *)(madt_entry + 4);
@@ -78,7 +78,7 @@ void ioapic_init(void) {
 	/* Handle NMI sources */
 	madt_entry = madt->Interrupt_Controller_Structure;
 	for (; (void *)madt_entry < (void *)madt + madt->Length;
-		 madt_entry += *(madt_entry + 1)) {
+		madt_entry += *(madt_entry + 1)) {
 		if (madt_entry[0] == 3 /* NMI Source */) {
 			ioapic_register_interrupt(2, *(uint32_t *)(madt_entry + 4), 0,
 				DELMOD_NMI, *(uint16_t *)(madt_entry + 2) >> 1,

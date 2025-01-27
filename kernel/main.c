@@ -10,7 +10,6 @@
 #include "cpu/x86.h"
 #include "drivers/nvme.h"
 #include "drivers/pci.h"
-#include "kernel/limine_reqs.h"
 #include "util/print.h"
 
 #include <cpuid.h>

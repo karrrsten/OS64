@@ -1,4 +1,4 @@
-# clang-format v17.0.1, https://releases.llvm.org/17.0.1/tools/clang/docs/ClangFormatStyleOptions.html
+#clang-format v19.1.0, https://releases.llvm.org/19.1.0/tools/clang/docs/ClangFormatStyleOptions.html
 
 AccessModifierOffset: 4
 AlignAfterOpenBracket: 'DontAlign'
@@ -12,29 +12,35 @@ AlignConsecutiveShortCaseStatements:
   AcrossEmptyLines: true
   AcrossComments: true
   AlignCaseColons: false
+AlignConsecutiveTableGenBreakingDAGArgColons: 'None'
+AlignConsecutiveTableGenCondOperatorColons: 'None'
+AlignConsecutiveTableGenDefinitionColons: 'None'
 AlignEscapedNewlines: 'Left'
 AlignOperands: 'AlignAfterOperator'
 AlignTrailingComments: false
 AllowAllArgumentsOnNextLine: true
 AllowAllParametersOfDeclarationOnNextLine: true
+AllowBreakBeforeNoexceptSpecifier: 'Never'
 AllowShortBlocksOnASingleLine: 'Empty'
+AllowShortCaseExpressionOnASingleLine: true
 AllowShortCaseLabelsOnASingleLine: true
+AllowShortCompoundRequirementOnASingleLine: true
 AllowShortEnumsOnASingleLine: false
 AllowShortFunctionsOnASingleLine: 'None'
 AllowShortIfStatementsOnASingleLine: 'Never'
 AllowShortLambdasOnASingleLine: true
 AllowShortLoopsOnASingleLine: true
-AlwaysBreakAfterReturnType: 'None'
 AlwaysBreakBeforeMultilineStrings: false
-AlwaysBreakTemplateDeclarations: Yes
 AttributeMacros: []
 BinPackArguments: true
 BinPackParameters: true
 BitFieldColonSpacing: 'Both'
 #BracedInitializerIndentWidth:
+BreakAdjacentStringLiterals: true
 #BraceWrapping:
 BreakAfterAttributes: 'Leave'
 BreakAfterJavaFieldAnnotations: true
+BreakAfterReturnType: 'Automatic'
 BreakArrays: true
 BreakBeforeBinaryOperators: 'All'
 BreakBeforeBraces: 'Attach'
@@ -42,8 +48,10 @@ BreakBeforeConceptDeclarations: 'Always'
 BreakBeforeInlineASMColon: 'Always'
 BreakBeforeTernaryOperators: true
 BreakConstructorInitializers: 'AfterColon'
+BreakFunctionDefinitionParameters: false
 BreakInheritanceList: 'AfterComma'
 BreakStringLiterals: true
+BreakTemplateDeclarations: 'Yes'
 ColumnLimit: 80
 CommentPragmas: ''
 CompactNamespaces: false
@@ -87,34 +95,39 @@ IntegerLiteralSeparator:
 JavaImportGroups: []
 JavaScriptQuotes: 'Double'
 JavaScriptWrapImports: true
-KeepEmptyLinesAtEOF: true
-KeepEmptyLinesAtTheStartOfBlocks: false
+KeepEmptyLines:
+  AtEndOfFile: true
+  AtStartOfBlock: false
+  AtStartOfFile: false
 LambdaBodyIndentation: 'Signature'
 #Language:
 LineEnding: 'DeriveLF'
 MacroBlockBegin: ''
 MacroBlockEnd: ''
 Macros:
+MainIncludeChar: 'Quote'
 MaxEmptyLinesToKeep: 2
 NamespaceIndentation: 'None'
 NamespaceMacros: []
 ObjCBinPackProtocolList: 'Auto'
 ObjCBlockIndentWidth: 4
 ObjCBreakBeforeNestedBlockParam: false
+ObjCPropertyAttributeOrder: []
 ObjCSpaceAfterProperty: false
 ObjCSpaceBeforeProtocolList: false
 PPIndentWidth: 4
 PackConstructorInitializers: 'Never'
-PenaltyBreakAssignment: 0 #?
-PenaltyBreakBeforeFirstCallParameter: 10 #?
-PenaltyBreakComment: 50 #?
-PenaltyBreakFirstLessLess: 100 #?
-PenaltyBreakOpenParenthesis: 10 #?
-PenaltyBreakString: 1000 #?
-PenaltyBreakTemplateDeclaration: 10 #?
-PenaltyExcessCharacter: 100 #?
-PenaltyIndentedWhitespace: 10 #?
-PenaltyReturnTypeOnItsOwnLine: 1000 #?
+PenaltyBreakAssignment: 0
+PenaltyBreakBeforeFirstCallParameter: 10
+PenaltyBreakComment: 50
+PenaltyBreakFirstLessLess: 100
+PenaltyBreakOpenParenthesis: 10
+PenaltyBreakScopeResolution: 50
+PenaltyBreakString: 1000
+PenaltyBreakTemplateDeclaration: 10
+PenaltyExcessCharacter: 100
+PenaltyIndentedWhitespace: 10
+PenaltyReturnTypeOnItsOwnLine: 1000
 PointerAlignment: 'Right'
 QualifierAlignment: 'Leave'
 #QualifierOrder:
@@ -128,6 +141,7 @@ RequiresClausePosition: 'OwnLine'
 RequiresExpressionIndentation: 'OuterScope'
 SeparateDefinitionBlocks: 'Always'
 ShortNamespaceLines: 1
+SkipMacroDefinitionBody: false
 SortIncludes: 'CaseInsensitive'
 SortJavaStaticImport: 'After'
 SortUsingDeclarations: true
@@ -153,12 +167,13 @@ SpacesInAngles: false
 SpacesInLineCommentPrefix:
   Maximum: 1
   Minimum: 1
-SpacesInParentheses: false
 SpacesInSquareBrackets: false
 Standard: 'Latest'
 StatementAttributeLikeMacros: []
 StatementMacros: []
 TabWidth: 4
+TableGenBreakInsideDAGArg: 'BreakAll'
+TableGenBreakingDAGArgOperators: []
 TypeNames: []
 TypenameMacros: []
 UseTab: 'AlignWithSpaces'

@@ -70,7 +70,7 @@ void apic_init(void) {
 
 	char *madt_entry = madt->Interrupt_Controller_Structure;
 	for (; (void *)madt_entry < (void *)madt + madt->Length;
-		 madt_entry += *(madt_entry + 1)) {
+		madt_entry += *(madt_entry + 1)) {
 		/* Local APIC Address Override */
 		if (madt_entry[0] != 5) {
 			continue;
@@ -98,7 +98,7 @@ void apic_init(void) {
 	/* Configure LINT0/LINT1 according to the MADT */
 	madt_entry = madt->Interrupt_Controller_Structure;
 	for (; (void *)madt_entry < (void *)madt + madt->Length;
-		 madt_entry += *(madt_entry + 1)) {
+		madt_entry += *(madt_entry + 1)) {
 		if (madt_entry[0] != 4 /* Local APIC NMI */) {
 			continue;
 		}

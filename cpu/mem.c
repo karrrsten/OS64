@@ -27,7 +27,8 @@ static size_t memmap_size;
  */
 void mem_init(void) {
 	kprintf("Initializing physical memory allocator...");
-	struct limine_memmap_entry **memmap_entries = limine_memmap_response->entries;
+	struct limine_memmap_entry **memmap_entries
+		= limine_memmap_response->entries;
 
 	/* find the highest useable physical address to save space in memmap */
 	for (size_t i = 0; i < limine_memmap_response->entry_count; ++i) {
@@ -59,8 +60,8 @@ void mem_init(void) {
 	for (size_t i = 0; i < limine_memmap_response->entry_count; ++i) {
 		if (memmap_entries[i]->type == LIMINE_MEMMAP_USABLE) {
 			for (uint64_t page = memmap_entries[i]->base;
-				 page < memmap_entries[i]->base + memmap_entries[i]->length;
-				 page += 4096) {
+				page < memmap_entries[i]->base + memmap_entries[i]->length;
+				page += 4096) {
 				size_t index = page / 4096 / 8;
 				int bit = page / 4096 % 8;
 				memmap[index] &= ~(1 << bit);
@@ -77,8 +78,8 @@ void mem_init(void) {
 
 	/* mark memmap itself as used */
 	for (uint64_t page = (uint64_t)memmap - HIGHER_HALF_BASE;
-		 page < (uint64_t)memmap - HIGHER_HALF_BASE + memmap_size;
-		 page += 4096) {
+		page < (uint64_t)memmap - HIGHER_HALF_BASE + memmap_size;
+		page += 4096) {
 		size_t index = page / 4096 / 8;
 		int bit = page / 4096 % 8;
 		memmap[index] |= 1 << bit;

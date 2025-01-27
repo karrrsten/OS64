@@ -50,17 +50,17 @@ void pg_init(void) {
 	for (size_t i = 0; i <= mem_max / 0x4000'0000 /* 1GB */ && i < 512; ++i) {
 		// Does not work in simics
 		/* pdp_entry[i]
-			= i * 0x4000'0000 | PAGE_SIZE | PAGE_PRESENT | PAGE_WRITE
+		    = i * 0x4000'0000 | PAGE_SIZE | PAGE_PRESENT | PAGE_WRITE
 		    | PAGE_GLOBAL; */
 
 		uint64_t *pt_entry = alloc_page();
 		pdp_entry[i]
-		    = (uint64_t)pt_entry | PAGE_PRESENT | PAGE_WRITE | PAGE_GLOBAL;
+			= (uint64_t)pt_entry | PAGE_PRESENT | PAGE_WRITE | PAGE_GLOBAL;
 
 		for (size_t j = 0; j < 512; ++j) {
-		    P2V(pt_entry)
-		    [j] = j * 0x20'0000 + i * 0x4000'0000 | PAGE_SIZE | PAGE_PRESENT
-		        | PAGE_WRITE | PAGE_GLOBAL;
+			P2V(pt_entry)
+			[j] = j * 0x20'0000 + i * 0x4000'0000 | PAGE_SIZE | PAGE_PRESENT
+			    | PAGE_WRITE | PAGE_GLOBAL;
 		}
 	}
 

@@ -75,13 +75,13 @@ void apic_set_timer(uint64_t time, interrupt_handler handler,
 		int shift = 32 - bits;
 		count = count >> shift;
 		switch (shift) {
-		case 1: divide = APIC_TIMER_DIVIDE_2; break;
-		case 2: divide = APIC_TIMER_DIVIDE_4; break;
-		case 3: divide = APIC_TIMER_DIVIDE_8; break;
-		case 4: divide = APIC_TIMER_DIVIDE_16; break;
-		case 5: divide = APIC_TIMER_DIVIDE_32; break;
-		case 6: divide = APIC_TIMER_DIVIDE_64; break;
-		case 7: divide = APIC_TIMER_DIVIDE_128; break;
+		case 1:  divide = APIC_TIMER_DIVIDE_2; break;
+		case 2:  divide = APIC_TIMER_DIVIDE_4; break;
+		case 3:  divide = APIC_TIMER_DIVIDE_8; break;
+		case 4:  divide = APIC_TIMER_DIVIDE_16; break;
+		case 5:  divide = APIC_TIMER_DIVIDE_32; break;
+		case 6:  divide = APIC_TIMER_DIVIDE_64; break;
+		case 7:  divide = APIC_TIMER_DIVIDE_128; break;
 		default: divide = APIC_TIMER_DIVIDE_1;
 		}
 	} else {

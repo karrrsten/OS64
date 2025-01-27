@@ -1,7 +1,6 @@
 #pragma once
 
 #include "cpu/idt.h"
-#include "cpu/x86.h"
 #include "util/list.h"
 
 #include <stddef.h>

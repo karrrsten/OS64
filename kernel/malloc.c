@@ -21,13 +21,14 @@ static struct heap_header *heap_head; /* Pointer to the first allocated block */
 
 /**
  * @brief Initialize the memory manager for calls to malloc() and friends.
- * @param heap_start The linear start address of the heap. Needs to be page aligned.
+ * @param heap_start The linear start address of the heap. Needs to be page
+ * aligned.
  * @param size The size of the heap.
  */
 void heap_init(void *heap_start, size_t size) {
 	kprintf("Initilizing heap...");
 
-	if ((uint64_t) heap_start & 0xFFF) {
+	if ((uint64_t)heap_start & 0xFFF) {
 		panic("heap_start = %w64X is not page aligned");
 	}
 
@@ -36,8 +37,7 @@ void heap_init(void *heap_start, size_t size) {
 	heap_end = heap + size;
 
 	for (void *ptr = heap; ptr <= heap_end; ptr += 4096) {
-		kmap(alloc_page(), ptr, 4096,
-			PAGE_PRESENT | PAGE_WRITE | PAGE_GLOBAL);
+		kmap(alloc_page(), ptr, 4096, PAGE_PRESENT | PAGE_WRITE | PAGE_GLOBAL);
 	}
 	memset(heap, 0, size);
 

@@ -4,7 +4,6 @@
 
 #include "cpu/page.h"
 #include "kernel/acpi.h"
-#include "kernel/acpi_tables.h"
 #include "kernel/malloc.h"
 #include "util/panic.h"
 #include "util/print.h"
@@ -140,7 +139,7 @@ static void check_device(struct pci_config_space *config_space,
 		}
 	} else {
 		kprintf("Singlefunction PCI device at %w16X:%w8X:%w8X with vendor id "
-		        "0x%w16X",
+				"0x%w16X",
 			segment_group, bus_number, device, vendor_id);
 		register_function(config_space, segment_group, bus_number, device, 0);
 	}
