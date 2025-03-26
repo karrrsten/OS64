@@ -2,21 +2,16 @@
 
 #include "malloc.h"
 
-#include "cpu/apic.h"
 #include "cpu/apic_timer.h"
 #include "cpu/gdt.h"
 #include "cpu/idt.h"
 #include "cpu/mem.h"
 #include "cpu/page.h"
 #include "cpu/x86.h"
-#include "kernel/vmem.h"
 #include "util/list.h"
-#include "util/panic.h"
 #include "util/print.h"
 
 #include <stdint.h>
-#include <stdio.h>
-#include <string.h>
 
 #define KSTACK_SIZE (4 * 4096)
 
@@ -36,8 +31,8 @@ static struct thread *next_thread(struct thread *current) {
 }
 
 static void switch_context(struct interrupt_frame *frame) {
-	kprint("Switch");
-	if (current_thread && frame) {
+	kprint("*");
+	if (current_thread) {
 		*(current_thread->regs) = *frame;
 	}
 
@@ -46,6 +41,8 @@ static void switch_context(struct interrupt_frame *frame) {
 
 	set_pml4(current_thread->proc->pml4);
 	*frame = *(current_thread->regs);
+
+	apic_set_timer(10000000, switch_context, APIC_TIMER_ONE_SHOT);
 }
 
 /**
@@ -69,31 +66,7 @@ void proc_init(void) {
  * will cease to exist shortly after.
  */
 void sched_start(void) {
-	apic_set_timer(100000, switch_context, APIC_TIMER_PERIODIC);
-}
-
-static int proc_pause_count = 0;
-
-/**
- * @brief Pause scheduling of threads and prevent context switches. Can be
- * called multiple times, @ref sched_resume needs to be called once for every
- * call afterwards.
- */
-void sched_pause(void) {
-	if (!proc_pause_count) {
-		apic_mask_timer();
-	}
-	proc_pause_count++;
-}
-
-/**
- * @brief Resume scheduling of threads and reenable context switches. Will only
- * actually resume if this is the outer most call.
- */
-void sched_resume(void) {
-	if (!--proc_pause_count) {
-		apic_unmask_timer();
-	}
+	apic_set_timer(1000000, switch_context, APIC_TIMER_ONE_SHOT);
 }
 
 /**
@@ -103,7 +76,7 @@ void sched_resume(void) {
  * @param data This pointer is passed to the executed function.
  */
 void thread_new(struct proc *p, void *func, void *data) {
-	sched_pause();
+	irq_disable();
 
 	struct thread *t = malloc(sizeof(struct thread));
 
@@ -128,7 +101,7 @@ void thread_new(struct proc *p, void *func, void *data) {
 
 	list_add(&t->thread_list, &thread_list);
 
-	sched_resume();
+	irq_enable();
 }
 
 /**
@@ -137,7 +110,7 @@ void thread_new(struct proc *p, void *func, void *data) {
  * @param data This pointer is passed to the executed function.
  */
 void proc_new(void *func, void *data) {
-	sched_pause();
+	irq_disable();
 
 	struct proc *p = malloc(sizeof(struct proc));
 
@@ -149,7 +122,7 @@ void proc_new(void *func, void *data) {
 
 	list_add(&p->proc_list, &proc_list);
 
-	sched_resume();
+	irq_enable();
 }
 
 struct kthread_wrapper_data {
@@ -162,8 +135,7 @@ struct kthread_wrapper_data {
 	void *data = d->data;
 	free(d);
 	((void (*)(void *))func)(data);
-	for (;;)
-		;
+	for (;;);
 }
 
 /**

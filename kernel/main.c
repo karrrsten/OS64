@@ -15,6 +15,13 @@
 #include <cpuid.h>
 #include <limine.h>
 
+void func(void) {
+	while (1) {
+		for (unsigned i = 0; i < 1000000; ++i);
+		kprint("\x7");
+	}
+}
+
 /**
  * @brief The main kernel function.
  */
@@ -39,8 +46,15 @@
 	irq_enable();
 
 
+	proc_init();
+	kthread_new(func, nullptr);
+	kthread_new(func, nullptr);
+
+	kprintf("Initializing kernel: Success");
+	sched_start();
+	for (;;);
+
 	pci_init();
 	nvme_init(pci_get_dev(1, 8, 2));
-	kprintf("Initializing kernel: Success");
-	for (;;);
 }
+
