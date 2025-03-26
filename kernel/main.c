@@ -19,6 +19,7 @@
  * @brief The main kernel function.
  */
 [[noreturn]] void kmain(void) {
+	irq_disable();
 	wcr0(CR0_PG | CR0_WP | CR0_NE | CR0_ET | CR0_PE);
 	wcr4(CR4_PGE | CR4_PAE);
 	wrmsr(MSR_IA32_EFER,
@@ -35,11 +36,11 @@
 	vmem_init();
 	apic_init();
 
+	irq_enable();
+
+
 	pci_init();
 	nvme_init(pci_get_dev(1, 8, 2));
-	sti();
-
 	kprintf("Initializing kernel: Success");
-	for (;;)
-		;
+	for (;;);
 }

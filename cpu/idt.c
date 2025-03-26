@@ -13,12 +13,23 @@ static interrupt_handler handlers[265];
 
 static uint32_t irq_disable_count = 0;
 
+/**
+ * @brief Enable irqs. Can stack such that irqs are only enabled again
+ * once for every call to irq_disable irq_enable has been called.
+ */
 void irq_enable(void) {
-	if (!--irq_disable_count) {
+	if (irq_disable_count > 1) {
+		--irq_disable_count;
+	} else {
+		--irq_disable_count;
 		sti();
 	}
 }
 
+/**
+ * @brief Disable irqs. Can stack such that irqs are only enabled again
+ * once for every call to irq_disable irq_enable has been called.
+ */
 void irq_disable(void) {
 	cli();
 	++irq_disable_count;
