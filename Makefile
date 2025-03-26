@@ -16,15 +16,17 @@ QEMU_FLAGS += -m 512M -machine q35 -cpu max -no-shutdown -no-reboot
 QEMU_FLAGS += -d int -M smm=off -trace events=trace_events.cfg -D qemu.log
 QEMU_FLAGS += -parallel none -serial stdio -vga none
 QEMU_FLAGS += -bios /usr/share/ovmf/x64/OVMF.4m.fd
-QEMU_FLAGS += -device nvme,serial=deadbeef,drive=nvm -drive file=$(IMG),if=none,format=raw,id=nvm
-#QEMU_FLAGS += -drive file=$(IMG),media=disk,format=raw
+QEMU_FLAGS += -device nvme,serial=deadbeef,drive=nvm
 
 IMG = build/os.img
-IMG_MOUNT = build/img_mount
 KERNEL = build/kernel.elf
 
 .PHONY: all
-all: $(IMG) compile_commands.json
+#select whether to run with an image or QEMUs fat emulation
+QEMU_FLAGS += -drive file=fat:rw:build/img_dir,if=none,format=raw,id=nvm
+all: img_dir compile_commands.json
+#QEMU_FLAGS += -drive file=$(IMG),if=none,format=raw,id=nvm
+#all: $(IMG) compile_commands.json
 
 # run the kernel in qemu
 .PHONY: run
@@ -43,6 +45,15 @@ debug: all
 compile_commands.json: $(CC_CMD_JSON)
 	sed -e '1s/^/[\n/' -e '$$s/,$$/\n]/' $(CC_CMD_JSON) > compile_commands.json
 
+img_dir: build limine.conf $(KERNEL)
+	mkdir -p build/img_dir
+	mkdir -p build/img_dir/limine build/img_dir/EFI/BOOT
+	cp $(KERNEL) build/img_dir
+	cp limine.conf build/img_dir/limine
+	cp /usr/share/limine/BOOTX64.EFI build/img_dir/EFI/BOOT
+
+.PHONY: img
+img: $(IMG)
 $(IMG): build limine.conf $(KERNEL)
 	qemu-img create $(IMG) 1G
 
@@ -56,14 +67,14 @@ $(IMG): build limine.conf $(KERNEL)
 
 	sudo mkfs.fat -F 32 $(LOOP_DEV)
 
-	sudo mount -o uid=$(shell id -u) $(LOOP_DEV) $(IMG_MOUNT)
-	mkdir -p $(IMG_MOUNT)/limine
-	mkdir -p $(IMG_MOUNT)/EFI/BOOT
-	cp $(KERNEL) $(IMG_MOUNT)
-	cp limine.conf $(IMG_MOUNT)/limine
-	cp /usr/share/limine/BOOTX64.EFI $(IMG_MOUNT)/EFI/BOOT
+	sudo mount -o uid=$(shell id -u) $(LOOP_DEV) build/mnt
+	mkdir -p build/mnt/limine
+	mkdir -p build/mnt/EFI/BOOT
+	cp $(KERNEL) build/mnt
+	cp limine.conf build/mnt/limine
+	cp /usr/share/limine/BOOTX64.EFI build/mnt/EFI/BOOT
 
-	sudo umount $(IMG_MOUNT)
+	sudo umount build/mnt
 	sudo losetup -d $(LOOP_DEV)
 
 build:
@@ -73,7 +84,7 @@ build:
 	for dir in $(build); do \
 		mkdir -p build/$$dir; \
 	done
-	mkdir -p build/img_mount
+	mkdir -p build/mnt
 
 $(KERNEL): build $(OBJ) linker.ld
 	$(CC) $(CFLAGS) -T linker.ld -Wl,--build-id=none $(OBJ) -o $@
