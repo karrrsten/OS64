@@ -1,5 +1,7 @@
 #pragma once
 
+#include "cpu/idt.h"
+
 #include <stdint.h>
 
 struct [[gnu::packed]] regs {
@@ -38,45 +40,57 @@ static inline void sti() {
 }
 
 static inline uint8_t inb(uint16_t port) {
+	irq_disable();
 	uint8_t result;
 	asm volatile("inb %%dx, %%al"
 		: "=a"(result)
 		: "d"(port));
+	irq_enable();
 	return result;
 }
 
 static inline uint16_t inw(uint16_t port) {
+	irq_disable();
 	uint16_t result;
 	asm volatile("inw %%dx, %%ax"
 		: "=a"(result)
 		: "d"(port));
+	irq_enable();
 	return result;
 }
 
 static inline uint32_t inl(uint16_t port) {
+	irq_disable();
 	uint32_t result;
 	asm volatile("inl %%dx, %%eax"
 		: "=a"(result)
 		: "d"(port));
+	irq_enable();
 	return result;
 }
 
 static inline void outb(uint16_t port, uint8_t data) {
+	irq_disable();
 	asm volatile("outb %%al, %%dx"
 		:
 		: "a"(data), "d"(port));
+	irq_enable();
 }
 
 static inline void outw(uint16_t port, uint16_t data) {
+	irq_disable();
 	asm volatile("outw %%ax, %%dx"
 		:
 		: "a"(data), "d"(port));
+	irq_enable();
 }
 
 static inline void outl(uint16_t port, uint32_t data) {
+	irq_disable();
 	asm volatile("outl %%eax, %%dx"
 		:
 		: "a"(data), "d"(port));
+	irq_enable();
 }
 
 static inline void __wrmsr(uint32_t msr, uint32_t low, uint32_t high) {
