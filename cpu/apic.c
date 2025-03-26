@@ -80,7 +80,7 @@ void apic_init(void) {
 	}
 
 	/* Map the APIC into virtual memory */
-	lapic = kmap((void *)lapic_phys_base, nullptr, 4096,
+	lapic = kmap((void *)lapic_phys_base, nullptr, 4'096,
 		PAGE_PRESENT | PAGE_PCD | PAGE_WRITE | PAGE_GLOBAL);
 
 	lapic_id = lapic_read(APIC_ID) << 24;

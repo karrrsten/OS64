@@ -17,7 +17,7 @@
 
 void func(void) {
 	while (1) {
-		for (unsigned i = 0; i < 1000000; ++i);
+		for (unsigned i = 0; i < 10'000'000; ++i);
 		kprint("\x7");
 	}
 }

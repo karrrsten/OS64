@@ -36,8 +36,8 @@ void heap_init(void *heap_start, size_t size) {
 	heap = heap_start;
 	heap_end = heap + size;
 
-	for (void *ptr = heap; ptr <= heap_end; ptr += 4096) {
-		kmap(alloc_page(), ptr, 4096, PAGE_PRESENT | PAGE_WRITE | PAGE_GLOBAL);
+	for (void *ptr = heap; ptr <= heap_end; ptr += 4'096) {
+		kmap(alloc_page(), ptr, 4'096, PAGE_PRESENT | PAGE_WRITE | PAGE_GLOBAL);
 	}
 	memset(heap, 0, size);
 

@@ -13,7 +13,8 @@
 
 #include <stdint.h>
 
-#define KSTACK_SIZE (4 * 4096)
+#define KSTACK_SIZE (4 * 4'096)
+#define THREAD_TIME (1'000'000)
 
 static struct list_head proc_list = LIST_HEAD_INIT(proc_list);
 static struct list_head thread_list = LIST_HEAD_INIT(thread_list);
@@ -31,7 +32,6 @@ static struct thread *next_thread(struct thread *current) {
 }
 
 static void switch_context(struct interrupt_frame *frame) {
-	kprint("*");
 	if (current_thread) {
 		*(current_thread->regs) = *frame;
 	}
@@ -42,7 +42,7 @@ static void switch_context(struct interrupt_frame *frame) {
 	set_pml4(current_thread->proc->pml4);
 	*frame = *(current_thread->regs);
 
-	apic_set_timer(10000000, switch_context, APIC_TIMER_ONE_SHOT);
+	apic_set_timer(THREAD_TIME, switch_context, APIC_TIMER_ONE_SHOT);
 }
 
 /**
@@ -66,7 +66,7 @@ void proc_init(void) {
  * will cease to exist shortly after.
  */
 void sched_start(void) {
-	apic_set_timer(1000000, switch_context, APIC_TIMER_ONE_SHOT);
+	apic_set_timer(THREAD_TIME, switch_context, APIC_TIMER_ONE_SHOT);
 }
 
 /**

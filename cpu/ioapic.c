@@ -52,7 +52,7 @@ void ioapic_init(void) {
 
 	uint64_t page_offset = ioapic_phys & 0x1FFF;
 	ioregsel
-		= kmap((void *)(ioapic_phys - page_offset), nullptr, 4096,
+		= kmap((void *)(ioapic_phys - page_offset), nullptr, 4'096,
 			  PAGE_PRESENT | PAGE_WRITE | PAGE_PCD | PAGE_GLOBAL)
 	    + page_offset;
 	iowin = (void *)ioregsel + 0x10;

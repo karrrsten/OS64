@@ -19,7 +19,7 @@
 #define PD_INDEX(addr)   ((virt >> 21) & 0x1FF)
 #define PT_INDEX(addr)   ((virt >> 12) & 0x1FF)
 
-#define PAGE_TABLE_ALIGN (4096)
+#define PAGE_TABLE_ALIGN (4'096)
 
 alignas(PAGE_TABLE_ALIGN) static volatile uint64_t pml4_kernel[512];
 volatile uint64_t *pg_pml4 = pml4_kernel;
@@ -39,7 +39,7 @@ void pg_init(void) {
 	/* Prepare kernel pdp entries in the pml4 that are always mapped */
 	for (int i = PML4_INDEX(HIGHER_HALF_BASE); i < 512; ++i) {
 		void *pdp = alloc_page();
-		memset_volatile(P2V(pdp), 0, 4096);
+		memset_volatile(P2V(pdp), 0, 4'096);
 
 		pml4_kernel[i] = (uint64_t)pdp | PAGE_PRESENT | PAGE_WRITE;
 	}
@@ -68,7 +68,7 @@ void pg_init(void) {
 	for (uint64_t phys_addr = limine_kernel_address_response->physical_base,
 				  virt_addr = limine_kernel_address_response->virtual_base;
 		virt_addr < (uint64_t)kernel_end;
-		phys_addr += 4096, virt_addr += 4096) {
+		phys_addr += 4'096, virt_addr += 4'096) {
 		map_single_page(phys_addr, virt_addr,
 			PAGE_PRESENT | PAGE_WRITE | PAGE_GLOBAL);
 	}
@@ -170,7 +170,7 @@ void *kmap(void *phys_addr, void *virt_addr, size_t size, uint64_t flags) {
 	uint64_t phys = (uint64_t)phys_addr;
 	uint64_t virt = (uint64_t)virt_addr;
 
-	for (; virt < (uint64_t)virt_addr + size; phys += 4096, virt += 4096) {
+	for (; virt < (uint64_t)virt_addr + size; phys += 4'096, virt += 4'096) {
 		map_single_page(phys, virt, flags);
 	}
 	return virt_addr;
@@ -196,7 +196,7 @@ static void unmap_single_page(uint64_t virt) {
  */
 void kunmap(void *virt_addr, size_t size) {
 	uint64_t virt = (uint64_t)virt_addr;
-	for (; virt <= virt + size; virt += 4096) {
+	for (; virt <= virt + size; virt += 4'096) {
 		unmap_single_page(virt);
 	}
 }
@@ -204,12 +204,12 @@ void kunmap(void *virt_addr, size_t size) {
 volatile uint64_t *alloc_pml4(void) {
 	volatile uint64_t *pml4 = P2V(alloc_page());
 
-	memset_volatile(pml4, 0, 4096);
-	memcpy_volatile(&pml4[256], &pg_pml4[256], 2048);
+	memset_volatile(pml4, 0, 4'096);
+	memcpy_volatile(&pml4[256], &pg_pml4[256], 2'048);
 
 	return pml4;
 }
 
 void free_pml4(volatile uint64_t *pml4) {
-	free_pages((void *)pml4, 4096);
+	free_pages((void *)pml4, 4'096);
 }

@@ -15,8 +15,8 @@
 #define CC_IOCQES (4)
 #define CC_IOSQES (6)
 
-#define AQA_ACQS (4096 / (1 << CC_IOCQES))
-#define AQA_ASQS (4096 / (1 << CC_IOSQES))
+#define AQA_ACQS (4'096 / (1 << CC_IOCQES))
+#define AQA_ASQS (4'096 / (1 << CC_IOSQES))
 
 struct nvme_cq {
 	volatile void *cq;
@@ -113,14 +113,14 @@ void nvme_init(struct pci_func *pci_func) {
 
 	/* Initialize internal data structure around submission/completion queues */
 	drive.admin_q.sq = malloc(sizeof(struct nvme_sq));
-	drive.admin_q.sq = kmap(alloc_page(), nullptr, 4096,
+	drive.admin_q.sq = kmap(alloc_page(), nullptr, 4'096,
 		PAGE_PRESENT | PAGE_PCD | PAGE_WRITE | PAGE_GLOBAL);
 	drive.admin_q.sq_doorbell = (void *)drive.regs + 0x1000;
 	drive.admin_q.sq_tail = 0;
 	drive.admin_q.sq_size = AQA_ASQS;
 
 	drive.admin_q.cq = malloc(sizeof(struct nvme_cq));
-	drive.admin_q.cq->cq = kmap(alloc_page(), nullptr, 4096,
+	drive.admin_q.cq->cq = kmap(alloc_page(), nullptr, 4'096,
 		PAGE_PRESENT | PAGE_PCD | PAGE_WRITE | PAGE_GLOBAL);
 	drive.admin_q.cq->cq_doorbell
 		= (void *)drive.regs + 0x1000 + (1 * (4 << drive.regs->CAP.DSTRD));
@@ -167,7 +167,7 @@ void nvme_init(struct pci_func *pci_func) {
 	while (drive.regs->CSTS.RDY != 1);
 
 	/* Identify (Identify Controller Data Structure) */
-	void *identify_command_buffer = kmap(alloc_page(), nullptr, 4096,
+	void *identify_command_buffer = kmap(alloc_page(), nullptr, 4'096,
 		PAGE_PRESENT | PAGE_PCD | PAGE_GLOBAL);
 
 	nvme_send_command(&drive.admin_q,
@@ -186,15 +186,15 @@ void nvme_init(struct pci_func *pci_func) {
 
 	/* Create I/O Completion Queue */
 	drive.io_q.cq = malloc(sizeof(struct nvme_cq));
-	drive.io_q.cq->cq = kmap(alloc_page(), nullptr, 4096,
+	drive.io_q.cq->cq = kmap(alloc_page(), nullptr, 4'096,
 		PAGE_PRESENT | PAGE_PCD | PAGE_WRITE | PAGE_GLOBAL);
 	drive.io_q.cq->cq_doorbell
 		= (void *)drive.regs + 0x1000 + (2 * (4 << drive.regs->CAP.DSTRD));
 	drive.io_q.cq->cq_head = 0;
-	if (drive.regs->CAP.MQES + 1 < (4096 / (1 << 4))) {
+	if (drive.regs->CAP.MQES + 1 < (4'096 / (1 << 4))) {
 		drive.io_q.cq->cq_size = drive.regs->CAP.MQES + 1;
 	} else {
-		drive.io_q.cq->cq_size = (4096 / (1 << 4));
+		drive.io_q.cq->cq_size = (4'096 / (1 << 4));
 	}
 
 	nvme_send_command(&drive.admin_q,
@@ -206,15 +206,15 @@ void nvme_init(struct pci_func *pci_func) {
 
 	/* Create I/O Submission Queue */
 	drive.io_q.sq = malloc(sizeof(struct nvme_sq));
-	drive.io_q.sq = kmap(alloc_page(), nullptr, 4096,
+	drive.io_q.sq = kmap(alloc_page(), nullptr, 4'096,
 		PAGE_PRESENT | PAGE_PCD | PAGE_WRITE | PAGE_GLOBAL);
 	drive.io_q.sq_doorbell
 		= (void *)drive.regs + 0x1000 + (3 * (4 << drive.regs->CAP.DSTRD));
 	drive.io_q.sq_tail = 0;
-	if (drive.regs->CAP.MQES + 1 < (4096 / (1 << 6))) {
+	if (drive.regs->CAP.MQES + 1 < (4'096 / (1 << 6))) {
 		drive.io_q.sq_size = drive.regs->CAP.MQES + 1;
 	} else {
-		drive.io_q.sq_size = (4096 / (1 << 6));
+		drive.io_q.sq_size = (4'096 / (1 << 6));
 	}
 	nvme_send_command(&drive.admin_q,
 		&(struct nvme_cmd) {.CDW0.OPC = 0x1,
@@ -224,7 +224,7 @@ void nvme_init(struct pci_func *pci_func) {
 
 
 	/* Identify (Active Namespace ID list) */
-	uint32_t *identity_namepsace_list = kmap(alloc_page(), nullptr, 4096,
+	uint32_t *identity_namepsace_list = kmap(alloc_page(), nullptr, 4'096,
 		PAGE_PRESENT | PAGE_PCD | PAGE_GLOBAL);
 
 	nvme_send_command(&drive.admin_q,
@@ -238,7 +238,7 @@ void nvme_init(struct pci_func *pci_func) {
 
 
 	/* Identify (Identify Namespace Data Structure, NVM Command Set) */
-	void *identify_namespace_buffer = kmap(alloc_page(), nullptr, 4096,
+	void *identify_namespace_buffer = kmap(alloc_page(), nullptr, 4'096,
 		PAGE_PRESENT | PAGE_PCD | PAGE_GLOBAL);
 	;
 	nvme_send_command(&drive.admin_q,

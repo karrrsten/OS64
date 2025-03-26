@@ -24,7 +24,7 @@ static const char *exception_strings[] = {"Divide-by-Zero-Error Exception",
 [[noreturn]] static void page_fault(struct interrupt_frame *frame) {
 	panic_frame(frame,
 		"An Error occured:\nError: Page-Fault Exception\nPage fault linear "
-	    "address: 0x%w64X\n",
+		"address: 0x%w64X\n",
 		frame->error_code, rcr2());
 }
 

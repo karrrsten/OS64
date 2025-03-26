@@ -50,7 +50,7 @@ void apic_set_timer(uint64_t time, interrupt_handler handler,
 			if (!ecx) {
 				panic("Could not determine APIC timer frequenzy.");
 			}
-			hz_frequency = ecx * 1000000; /* scale ecx from mHz to Hz */
+			hz_frequency = ecx * 1'000'000; /* scale ecx from mHz to Hz */
 		}
 
 		vector = idt_alloc_vector();
@@ -65,7 +65,7 @@ void apic_set_timer(uint64_t time, interrupt_handler handler,
 	timer_handler = handler;
 
 	/* Start the timer */
-	uint64_t count = time * hz_frequency / 1000000000;
+	uint64_t count = time * hz_frequency / 1'000'000'000;
 
 	/* Determine the correct divide value to use by counting finding out how far
 	 * count needs to be shifted left to fit in 32 bits */

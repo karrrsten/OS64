@@ -47,7 +47,7 @@ void vmem_init(void) {
  */
 void *vmem_alloc(size_t size) {
 	/* make size a multiple of 4096 for ease of use */
-	size += (size % 4096 != 0) ? (4096 - size % 4096) : 0;
+	size += (size % 4'096 != 0) ? (4'096 - size % 4'096) : 0;
 	struct vheap_header *current = vheap_head;
 
 	if (current->size == 0) {
