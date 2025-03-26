@@ -17,13 +17,14 @@ static const char *exception_strings[] = {"Divide-by-Zero-Error Exception",
 	"VMM Communication Exception", "Security Exception", "Reserved"};
 
 [[noreturn]] static void exception_handler(struct interrupt_frame *frame) {
-	panic("An Error occured: \n Error: %s\n Code: 0x%w64X",
+	panic_frame(frame, "An Error occured: \n Error: %s\n",
 		exception_strings[frame->vector], frame->error_code);
 }
 
 [[noreturn]] static void page_fault(struct interrupt_frame *frame) {
-	panic("An Error occured:\nError: Page-Fault Exception\nCode: "
-		  "0x%w64X\nPage fault linear address: 0x%w64X",
+	panic_frame(frame,
+		"An Error occured:\nError: Page-Fault Exception\nPage fault linear "
+	    "address: 0x%w64X\n",
 		frame->error_code, rcr2());
 }
 

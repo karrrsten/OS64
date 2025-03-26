@@ -40,6 +40,8 @@ struct [[gnu::packed]] interrupt_frame {
 	uint64_t ss;
 };
 
+void dump_frame(struct interrupt_frame *frame);
+
 typedef void (*interrupt_handler)(struct interrupt_frame *);
 
 extern volatile __uint128_t idt[256];

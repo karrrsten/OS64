@@ -35,6 +35,19 @@ void irq_disable(void) {
 	++irq_disable_count;
 }
 
+void dump_frame(struct interrupt_frame *frame) {
+	kprintf(
+		"Frame dump:\nvector: 0x%w64X\nerror_code: 0x%w64X\nrflags: 0x%w64X\ncs: "
+		"0x%w64X\nrip: 0x%w64X\nss: 0x%w64X\nrsp: 0x%w64X\nrbp: 0x%w64X\nrax: "
+		"0x%w64X\nrbx: 0x%w64X\nrcx: 0x%w64X\nrdx: 0x%w64X\nrsi: 0x%w64X\nrdi: "
+		"0x%w64X\nr8: 0x%w64X\nr9: 0x%w64X\nr10: 0x%w64X\nr11: 0x%w64X\nr12: 0x%w64X\nr13: "
+		"0x%w64X\nr14: 0x%w64X\nr15: 0x%w64X\n",
+		frame->vector, frame->error_code, frame->rflags, frame->cs, frame->rip,
+		frame->ss, frame->rsp, frame->rbp, frame->rax, frame->rbp, frame->rcx,
+		frame->rdx, frame->rsi, frame->rdi, frame->r8, frame->r9, frame->r10,
+		frame->r11, frame->r12, frame->r13, frame->r14, frame->r15);
+}
+
 /**
  * @brief Allocate a vector in the idt.
  * @return The allocated vector or -1 if no vector was free
