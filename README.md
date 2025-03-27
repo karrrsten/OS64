@@ -14,7 +14,7 @@ Build the kernel:
     make all
 Create a bootable disk image (gpt with fat32):
 
-```make img```
+    make img
 Run the kernel in 
 
     make run
