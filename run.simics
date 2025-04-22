@@ -1,0 +1,9 @@
+! wsl make -C /home/ben/OS64
+! wsl cp /home/ben/OS64/build/os.img /home/ben/OS64/build/kernel.elf /mnt/c/Users/benka/simics-projects/OS64
+
+run-command-file targets\qsp-x86\qsp-hdd-boot.simics disk0_image = "os.img" enable_efi = TRUE show_con0 = TRUE show_gfx_con = TRUE
+new-gdb-remote 1234
+add-symbol-file kernel.elf
+enable-debugger
+enable-reverse-execution
+win-control
