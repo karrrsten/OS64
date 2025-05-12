@@ -54,14 +54,14 @@ static void apic_spurious_handler(struct interrupt_frame *) {
  */
 
 void apic_init(void) {
-	kprintf("Initializing APIC...");
+	kprint("Initializing APIC...\n");
 
 	struct MADT *madt = acpi_get_table(ACPI_MADT);
 
 	if (madt->PCAT_COMPAT) {
 		/* Disable the 8259 compatible PIC */
-		outb(0xA1, 0xFF);
 		outb(0x21, 0xFF);
+		outb(0xA1, 0xFF);
 	}
 
 	/* Get the phyiscal base of the APIC from the MADT */
@@ -84,7 +84,7 @@ void apic_init(void) {
 		PAGE_PRESENT | PAGE_PCD | PAGE_WRITE | PAGE_GLOBAL);
 
 	lapic_id = lapic_read(APIC_ID) << 24;
-	kprintf("Processor Local APIC ID: %w8X", lapic_id);
+	kprintf("Processor Local APIC ID: %w8X\n", lapic_id);
 
 	/* Disable all LVT entries */
 	lapic_write(APIC_LVT_CMCI, APIC_LVT_MASK);
@@ -129,5 +129,5 @@ void apic_init(void) {
 	idt_register(0xFF, apic_spurious_handler);
 	lapic_write(APIC_SPURIOUS_INT, APIC_SOFTWARE_ENABLE | 0xFF);
 	wrmsr(IA32_APIC_BASE_MSR, rdmsr(IA32_APIC_BASE_MSR) | APIC_MSR_ENABLE);
-	kprintf("Initializing APIC: Success");
+	kprint("Initializing APIC: Success\n");
 }

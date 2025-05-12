@@ -20,13 +20,11 @@ size_t mem_max;
 static uint8_t *memmap; /* Map of all of physical memory */
 static size_t memmap_size;
 
-// TODO: reclaim bootloader reclaimable at the end of kmain
-
 /**
  * @brief Initialize the physical memory manager.
  */
 void mem_init(void) {
-	kprintf("Initializing physical memory allocator...");
+	kprint("Initializing physical memory allocator...\n");
 	struct limine_memmap_entry **memmap_entries
 		= limine_memmap_response->entries;
 
@@ -37,7 +35,8 @@ void mem_init(void) {
 		}
 	}
 
-	kprintf("Total amount of memory available: %zu = 0x%zX", mem_max, mem_max);
+	kprintf("Total amount of memory available: %zu = 0x%zX\n", mem_max,
+		mem_max);
 	memmap_size = mem_max / 4'096 / 8;
 
 	for (size_t i = 0; i < limine_memmap_response->entry_count; ++i) {
@@ -84,7 +83,7 @@ void mem_init(void) {
 		int bit = page / 4'096 % 8;
 		memmap[index] |= 1 << bit;
 	}
-	kprintf("Initializing physical memory allocator: Success");
+	kprint("Initializing physical memory allocator: Success\n");
 }
 
 /**

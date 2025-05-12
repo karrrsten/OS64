@@ -26,7 +26,7 @@ static struct heap_header *heap_head; /* Pointer to the first allocated block */
  * @param size The size of the heap.
  */
 void heap_init(void *heap_start, size_t size) {
-	kprintf("Initilizing heap...");
+	kprint("Initilizing heap...\n");
 
 	if ((uint64_t)heap_start & 0xFFF) {
 		panic("heap_start = %w64X is not page aligned");
@@ -46,7 +46,7 @@ void heap_init(void *heap_start, size_t size) {
 	heap_head->size = 0;
 	heap_head->next = nullptr;
 
-	kprintf("Initializing heap: Success");
+	kprint("Initializing heap: Success\n");
 }
 
 void *malloc(size_t size) {

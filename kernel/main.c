@@ -33,7 +33,7 @@ void func(void) {
 		IA32_EFER_NXE | IA32_EFER_LMA | IA32_EFER_LME | IA32_EFER_SCE);
 
 	serial_init();
-	kprintf("Initializing kernel...");
+	kprint("Initializing kernel...\n");
 
 	gdt_init();
 	idt_init();
@@ -50,7 +50,7 @@ void func(void) {
 	kthread_new(func, nullptr);
 	kthread_new(func, nullptr);
 
-	kprintf("Initializing kernel: Success");
+	kprint("Initializing kernel: Success\n");
 	sched_start();
 	for (;;);
 

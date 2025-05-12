@@ -238,7 +238,6 @@ int kvprintf(const char *format, va_list arg) {
 		default: return -1;
 		}
 	}
-	serial_putchar('\n');
 	return ret;
 }
 

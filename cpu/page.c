@@ -30,7 +30,7 @@ static void map_single_page(uint64_t phys, uint64_t virt, uint64_t flags);
  * @brief Initialize the kernel's page tables.
  */
 void pg_init(void) {
-	kprintf("Initializing paging...");
+	kprint("Initializing paging...\n");
 	uint64_t cr3
 		= ((uint64_t)&pml4_kernel - KERNEL_BASE
 			  + limine_kernel_address_response->physical_base)
@@ -73,11 +73,11 @@ void pg_init(void) {
 			PAGE_PRESENT | PAGE_WRITE | PAGE_GLOBAL);
 	}
 
-	kprintf("Initializing paging: Success");
+	kprint("Initializing paging: Success\n");
 
-	kprintf("Loading CR3...");
+	kprint("Loading CR3...\n");
 	wcr3(cr3);
-	kprintf("Loading CR3: Success");
+	kprint("Loading CR3: Success\n");
 }
 
 /**

@@ -50,7 +50,7 @@ alignas(8) static volatile char gdt[56];
  * segment for both an an entry for a tss.
  */
 void gdt_init(void) {
-	kprintf("Preparing GDT...");
+	kprint("Preparing GDT...\n");
 
 	*(uint64_t *)&gdt[GDT_NULL] = 0;
 
@@ -63,6 +63,7 @@ void gdt_init(void) {
 	*(uint64_t *)&gdt[GDT_USER_CS]
 		= SEG_CODE | SEG_PRESENT | SEG_DPL_3 | CS_LONG_MODE;
 
+	// TODO: might be able to delete this
 	*(uint64_t *)&gdt[GDT_USER_DS]
 		= SEG_DATA | SEG_PRESENT | SEG_DPL_3 | DS_WRITABLE;
 
@@ -73,17 +74,20 @@ void gdt_init(void) {
 		= SYS_SEG_TSS | SEG_PRESENT | SEG_DPL_3 | SYS_SEG_SPLIT_BASE(tss_phys)
 	    | SYS_SEG_SPLIT_LIMIT(sizeof(tss));
 
-	kprintf("Loading GDT...");
+	kprint("Loading GDT...\n");
 	lgdt(sizeof(gdt) - 1, (uint64_t)gdt);
-	kprintf("Loading GDT: Success");
+	kprint("Loading GDT: Success\n");
 
-	kprintf("Loading TSS...");
+	kprint("Loading TSS...\n");
 	tss.rsp0 = (uint64_t)isr_stack;
 	ltr(GDT_TSS);
-	kprintf("Loading TSS: Success");
+	kprint("Loading TSS: Success\n");
 
-	kprintf("Loading segment registers...");
+	kprint("Loading segment registers...\n");
 	/* load %ds, %es, %fs, %gs, %ss */
+	/* Note: apparently ds,es,ss contents are ignored entirely, NULL selector
+	 * should also work...a full GDT is still needed for syscall/sysret though
+	 */
 	asm volatile(
 		"movw $0x10, %%ax\n"
 		"movw %%ax, %%ds\n"
@@ -104,5 +108,5 @@ void gdt_init(void) {
 		:
 		: ret);
 ret:
-	kprintf("Loading segment registers: Success");
+	kprint("Loading segment registers: Success\n");
 }

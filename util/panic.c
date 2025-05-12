@@ -19,7 +19,7 @@
 	va_start(arg);
 	kvprintf(format, arg);
 	va_end(arg);
-	kprintf("Halting...");
+	kprint("Halting...\n");
 	for (;;) {
 		hlt();
 	}
@@ -40,7 +40,7 @@
 	kvprintf(format, arg);
 	va_end(arg);
 	dump_frame(frame);
-	kprintf("Halting...");
+	kprint("Halting...\n");
 	for (;;) {
 		hlt();
 	}

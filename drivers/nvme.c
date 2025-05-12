@@ -99,7 +99,7 @@ static void nvme_send_command(struct nvme_sq *queue,
 }
 
 void nvme_init(struct pci_func *pci_func) {
-	kprintf("Initializing NVMe drive...");
+	kprint("Initializing NVMe drive...\n");
 
 	drive.pci_func = pci_func;
 	drive.pci_func->config_space->command.mem_space = 1;
@@ -151,7 +151,7 @@ void nvme_init(struct pci_func *pci_func) {
 	drive.regs->CC.CSS = 0b000;
 #if 0
 	if (drive.regs->CAP.CSS >> 7) {
-		kprintf("NVMe Controller does not support the NVM Command Set");
+		kprint("NVMe Controller does not support the NVM Command Set\n");
 		return;
 	} else if (drive.regs->CAP.CSS >> 6) {
 		drive.regs->CC.CSS = 0b110;
@@ -263,5 +263,5 @@ void nvme_init(struct pci_func *pci_func) {
 			   >> 16)
 			  & 0xFFFF);
 
-	kprintf("Initializing NVMe drive: Success");
+	kprint("Initializing NVMe drive: Success\n");
 }

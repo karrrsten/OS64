@@ -23,7 +23,7 @@ static void *vheap_end;
  * @brief Initialize the heap of virtual memory/pages.
  */
 void vmem_init(void) {
-	kprintf("Initializing virtual heap...");
+	kprint("Initializing virtual heap...\n");
 
 	vheap_start
 		= (void *)HIGHER_HALF_BASE + mem_max
@@ -37,7 +37,7 @@ void vmem_init(void) {
 	vheap_head->addr = (void *)vheap_start;
 	vheap_head->size = 0;
 	vheap_head->next = nullptr;
-	kprintf("Initializing virtual heap: Success");
+	kprint("Initializing virtual heap: Success\n");
 }
 
 /**
