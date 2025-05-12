@@ -6,7 +6,7 @@ CC_CMD_JSON = $(OBJ:%.o=%.json)
 CC = clang
 QEMU = qemu-system-x86_64
 
-CFLAGS += -ggdb -g3 -O0 -std=gnu23 -ffreestanding
+CFLAGS += -ggdb -g3 -O0 -std=gnu2y -ffreestanding
 CFLAGS += -fms-extensions -fwrapv -fno-strict-aliasing #-fstrict-volatile-bitfields
 CFLAGS += -target x86_64-elf -mgeneral-regs-only -mno-red-zone -mcmodel=large -fno-stack-protector
 CFLAGS += -Wall -Wextra -Werror -Wno-microsoft-anon-tag -Wno-address-of-packed-member -Wno-unused-function
